@@ -13,6 +13,19 @@ const db = {
     messages: {}
 };
 
+// Функция для красивого отображения времени в логах сервера
+function getFormattedTime() {
+    const d = new Date();
+    // Сдвиг на Московское время (+3), если сервер находится в другой стране
+    const offset = 3; 
+    const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+    const nd = new Date(utc + (3600000 * offset));
+    
+    const dateStr = nd.toLocaleDateString('ru-RU');
+    const timeStr = nd.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    return `${dateStr} в ${timeStr}`;
+}
+
 function getCleanData(body) {
     if (!body) return {};
     if (typeof body === 'string') {
@@ -29,14 +42,11 @@ app.put('/:folder/:file.json', (req, res) => {
     if (!db[folder]) db[folder] = {};
     db[folder][file] = data;
 
-    // ЛОГИРОВАНИЕ: Регистрация пользователя
     if (folder === 'users') {
-        console.log(`\n=== 🆕 РЕГИСТРАЦИЯ ===`);
-        console.log(`Пользователь: [ ${file} ]`);
-        console.log(`Пароль: ${data.password} | ID: ${data.id}`);
-        console.log(`======================\n`);
+        console.log(`\n=== 🆕 РЕГИСТРАЦИЯ [${getFormattedTime()}] ===`);
+        console.log(`Пользователь: [ ${file} ] | Пароль: ${data.password} | ID: ${data.id}`);
+        console.log(`=========================================\n`);
     }
-
     res.json({ status: "success" });
 });
 
@@ -48,22 +58,17 @@ app.put('/:folder/:subfolder/:file.json', (req, res) => {
     if (!db[folder][subfolder]) db[folder][subfolder] = {};
     db[folder][subfolder][file] = data;
 
-    // ЛОГИРОВАНИЕ: Добавление в контакты
     if (folder === 'contacts') {
-        console.log(`\n=== 👥 НОВЫЙ КОНТАКТ ===`);
-        console.log(`Пользователь [ ${subfolder} ] добавил в друзья [ ${file} ] (ID: ${data.id})`);
-        console.log(`========================\n`);
+        console.log(`\n=== 👥 НОВЫЙ КОНТАКТ [${getFormattedTime()}] ===`);
+        console.log(`Пользователь [ ${subfolder} ] добавил в друзья [ ${file} ]`);
+        console.log(`============================================\n`);
     }
 
-    // ЛОГИРОВАНИЕ: Отправка сообщения
     if (folder === 'messages') {
-        console.log(`\n=== 💬 НОВОЕ СООБЩЕНИЕ ===`);
-        console.log(`Комната: ${subfolder}`);
-        console.log(`Отправитель: [ ${data.sender} ]`);
-        console.log(`Текст: "${data.text}"`);
-        console.log(`==========================\n`);
+        console.log(`\n=== 💬 НОВОЕ СООБЩЕНИЕ [${getFormattedTime()}] ===`);
+        console.log(`Отправитель: [ ${data.sender} ] | Текст: "${data.text}"`);
+        console.log(`==============================================\n`);
     }
-
     res.json({ status: "success" });
 });
 
@@ -75,40 +80,30 @@ app.get('/:folder.json', (req, res) => {
 
 app.get('/:folder/:file.json', (req, res) => {
     const { folder, file } = req.params;
-    
-    // ЛОГИРОВАНИЕ: Попытка входа (авторизация)
     if (folder === 'users') {
-        console.log(`\n=== 🔑 ПОПЫТКА ВХОДА ===`);
+        console.log(`\n=== 🔑 ПОПЫТКА ВХОДА [${getFormattedTime()}] ===`);
         console.log(`Логин: [ ${file} ]`);
-        console.log(`========================\n`);
+        console.log(`==========================================\n`);
     }
-
-    if (db[folder] && db[folder][file]) {
-        return res.json(db[folder][file]);
-    }
+    if (db[folder] && db[folder][file]) return res.json(db[folder][file]);
     res.json(null);
 });
 
 app.get('/:folder/:subfolder.json', (req, res) => {
     const { folder, subfolder } = req.params;
-    if (db[folder] && db[folder][subfolder]) {
-        return res.json(db[folder][subfolder]);
-    }
+    if (db[folder] && db[folder][subfolder]) return res.json(db[folder][subfolder]);
     res.json(null);
 });
 
 // 3. Удаление данных (DELETE)
 app.delete('/:folder/:subfolder/:file.json', (req, res) => {
     const { folder, subfolder, file } = req.params;
-    
     if (db[folder] && db[folder][subfolder] && db[folder][subfolder][file]) {
         delete db[folder][subfolder][file];
-        
-        // ЛОГИРОВАНИЕ: Удаление контакта
         if (folder === 'contacts') {
-            console.log(`\n=== ❌ УДАЛЕНИЕ КОНТАКТА ===`);
-            console.log(`Пользователь [ ${subfolder} ] удалил из друзей [ ${file} ]`);
-            console.log(`============================\n`);
+            console.log(`\n=== ❌ УДАЛЕНИЕ КОНТАКТА [${getFormattedTime()}] ===`);
+            console.log(`Пользователь [ ${subfolder} ] удалил [ ${file} ]`);
+            console.log(`==============================================\n`);
         }
     }
     res.json({ status: "deleted" });
