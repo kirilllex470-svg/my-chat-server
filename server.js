@@ -16,7 +16,7 @@ const db = {
 // Функция для красивого отображения времени в логах сервера
 function getFormattedTime() {
     const d = new Date();
-    // Сдвиг на Московское время (+3), если сервер находится в другой стране
+    // Сдвиг на Московское время (+3)
     const offset = 3; 
     const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
     const nd = new Date(utc + (3600000 * offset));
@@ -71,7 +71,6 @@ app.put('/:folder/:subfolder/:file.json', (req, res) => {
     }
     res.json({ status: "success" });
 });
-
 // 2. Чтение данных (GET)
 app.get('/:folder.json', (req, res) => {
     const { folder } = req.params;
