@@ -297,7 +297,7 @@
         fetch(URL_FB + "messages/" + chatRoom + "/" + msgId + ".json", { method: "PUT", body: JSON.stringify(messageBody) }).then(() => {
             
             // ОТПРАВКА PUSH УВЕДОМЛЕНИЯ ЧЕРЕЗ ONESIGNAL API
-            fetch("https://onesignal.com", {
+            fetch("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json; charset=utf-8",
