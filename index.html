@@ -5,16 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мой Чат</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <!-- Подключаем официальную библиотеку OneSignal -->
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733",
-    });
-  });
-</script>
+    <!-- Official OneSignal Web SDK Script -->
+    <script src="https://onesignal.com" defer></script>
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.96); }
@@ -106,40 +98,33 @@
     let myAccount = "", myID = "", chatWith = "", chatTimer = null;
     let attachedFile = null; 
 
-    // НАСТРОЙКА УВЕДОМЛЕНИЙ ONESIGNAL ДЛЯ RENDER
+    // Настройка Web Old OneSignal Web Push (Настроено на автоматический запуск токена)
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
             appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733",
             autoRegister: true,
-            notifyButton: { 
-                enable: true, 
-                position: 'bottom-right' 
-            }
+            notifyButton: { enable: true, position: 'bottom-right' },
+            // ВАЖНО: Маршруты для принудительного создания Push токена на хостинге Render
+            workerPath: "OneSignalSDKWorker.js",
+            registrationScope: "/"
         });
         if (myAccount) { OneSignal.login(myAccount); }
     });
 
-
-    // ==================== ВСТАВЬТЕ ВАШУ ССЫЛКУ ОТ RENDER СЮДА ====================
+    // ==================== ВСТАВЬТЕ ССЫЛКУ НА ВАШ СЕРВЕР RENDER ТУТ ====================
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
     const URL_NTFY = "https://ntfy.sh";
     // =============================================================================
 
     function addEmoji(emoji) {
         const input = document.getElementById("textInp");
-        input.value += emoji;
-        input.focus();
+        input.value += emoji; input.focus();
     }
 
     function handleFileSelect(input) {
-        const file = input.files;
-        if (!file) return;
-        if (file.size > 2 * 1024 * 1024) { 
-            alert("Файл слишком большой! Максимум 2 МБ.");
-            input.value = "";
-            return;
-        }
+        const file = input.files; if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { alert("Файл слишком большой! Максимум 2 МБ."); input.value = ""; return; }
         const reader = new FileReader();
         reader.onload = function(e) {
             attachedFile = { name: file.name, type: file.type, data: e.target.result };
@@ -181,13 +166,11 @@
                 document.getElementById("boxMain").classList.add("active");
                 document.getElementById("lblUser").innerText = "Вы: " + myAccount + " (ID: " + myID + ")";
                 
-                // ИСПРАВЛЕНИЕ ДЛЯ ПУШЕЙ: Жёсткая и гарантированная привязка логина к OneSignal
+                // Привязываем аккаунт в OneSignal сразу после ввода логина
                 window.OneSignalDeferred = window.OneSignalDeferred || [];
                 window.OneSignalDeferred.push(function(OneSignal) {
-                    console.log("OneSignal привязывает аккаунт:", myAccount);
-                    OneSignal.login(myAccount).then(() => {
-                        console.log("Логин успешно привязан к OneSignal!");
-                    }).catch(e => console.log("Ошибка привязки OneSignal:", e));
+                    OneSignal.login(myAccount);
+                    if (OneSignal.Notifications) { OneSignal.Notifications.requestPermission(); }
                 });
 
                 if (myAccount === "admin") {
@@ -263,24 +246,19 @@
     }
 
     function startPersonalChat(targetLog) {
-        chatWith = targetLog;
-        document.getElementById("chatTargetLabel").innerText = targetLog;
-        actionLoadMyContacts();
+        chatWith = targetLog; document.getElementById("chatTargetLabel").innerText = targetLog; actionLoadMyContacts();
         if(chatTimer) clearInterval(chatTimer);
-        loadMessages();
-        chatTimer = setInterval(loadMessages, 3000); 
+        loadMessages(); chatTimer = setInterval(loadMessages, 3000); 
     }
 
     function loadMessages() {
-        if (!chatWith) return;
-        const chatRoom = [myAccount, chatWith].sort().join("_");
+        if (!chatWith) return; const chatRoom = [myAccount, chatWith].sort().join("_");
         fetch(URL_FB + "messages/" + chatRoom + ".json").then(r => r.json()).then(data => {
             const area = document.getElementById("areaMessages");
             area.innerHTML = data ? "" : "Сообщений нет. Напишите первым!"; if (!data) return;
             Object.keys(data).sort().forEach(msgId => {
                 const m = data[msgId]; if (!m) return;
-                const div = document.createElement("div");
-                div.className = "msg " + (m.sender === myAccount ? "my" : "other");
+                const div = document.createElement("div"); div.className = "msg " + (m.sender === myAccount ? "my" : "other");
                 if (m.text) { const t = document.createElement("span"); t.innerText = m.text; div.appendChild(t); }
                 if (m.file) {
                     if (m.file.type && m.file.type.startsWith("image/")) {
@@ -290,10 +268,8 @@
                     }
                 }
                 if (m.time) {
-                    const timeSpan = document.createElement("span"); timeSpan.className = "msg-time";
-                    const msgDate = new Date(m.time);
-                    timeSpan.innerText = `${String(msgDate.getHours()).padStart(2, '0')}:${String(msgDate.getMinutes()).padStart(2, '0')}`;
-                    div.appendChild(timeSpan);
+                    const timeSpan = document.createElement("span"); timeSpan.className = "msg-time"; const msgDate = new Date(m.time);
+                    timeSpan.innerText = `${String(msgDate.getHours()).padStart(2, '0')}:${String(msgDate.getMinutes()).padStart(2, '0')}`; div.appendChild(timeSpan);
                 }
                 area.appendChild(div);
             });
@@ -304,8 +280,7 @@
     function actionSend() {
         const text = document.getElementById("textInp").value.trim();
         if (!text && !attachedFile) return; if (!chatWith) return;
-        const chatRoom = [myAccount, chatWith].sort().join("_");
-        const msgId = "msg_" + Date.now();
+        const chatRoom = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now();
         const messageBody = { sender: myAccount, text: text, time: Date.now() };
         if (attachedFile) messageBody.file = attachedFile;
         
