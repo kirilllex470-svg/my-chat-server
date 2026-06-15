@@ -6,7 +6,15 @@
     <title>Мой Чат</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <!-- Official OneSignal Web SDK Script -->
-    <script src="https://onesignal.com" defer></script>
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733",
+    });
+  });
+</script>
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.96); }
