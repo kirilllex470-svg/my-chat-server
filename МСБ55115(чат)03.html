@@ -98,17 +98,19 @@
     let myAccount = "", myID = "", chatWith = "", chatTimer = null;
     let attachedFile = null; 
 
-    // Инициализация Web Push уведомлений OneSignal
+    // НАСТРОЙКА УВЕДОМЛЕНИЙ ONESIGNAL
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
             appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733",
-            safari_web_id: "web.onesignal.auto.msb55115",
-			path: "/my-chat-server/", 
+            // УБРАЛИ safari_web_id, чтобы не было конфликта ключей
+            path: "/my-chat-server/", 
             notifyButton: { enable: true }
         });
+        
         if (myAccount) { OneSignal.login(myAccount); }
     });
+
 
     // ==================== ВСТАВЬТЕ ВАШУ ССЫЛКУ ОТ RENDER СЮДА ====================
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
