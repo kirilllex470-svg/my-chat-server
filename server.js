@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 app.use(cors());
 
-// Разрешаем принимать большие файлы и картинки до 50 Мегабайт
+// Разрешаем принимать большие файлы и картинки в чате до 50 Мегабайт
 app.use(express.json({ limit: '50mb' }));
 app.use(express.text({ type: '*/*', limit: '50mb' }));
 
@@ -73,7 +73,6 @@ app.put('/:folder/:subfolder/:file.json', (req, res) => {
     }
     res.json({ status: "success" });
 });
-
 // 2. Чтение данных (GET)
 app.get('/:folder.json', (req, res) => {
     const { folder } = req.params;
@@ -106,7 +105,13 @@ app.delete('/:folder/:subfolder/:file.json', (req, res) => {
     res.json({ status: "deleted" });
 });
 
-// МАГИЯ ТУТ: Заставляем сервер открывать наш файл index.html как главный сайт!
+// ИСПРАВЛЕНИЕ: Принудительно заставляем сервер правильно отдавать файл OneSignal в интернет
+app.get('/OneSignalSDKWorker.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.sendFile(path.join(__dirname, 'OneSignalSDKWorker.js'));
+});
+
+// Заставляем сервер открывать наш файл index.html как главный сайт
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
