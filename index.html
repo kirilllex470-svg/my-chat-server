@@ -28,6 +28,10 @@
         .msg.my { background: #2481cc; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
         .msg.other { background: rgba(255,255,255,0.15); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg img { max-width: 100%; border-radius: 12px; margin-top: 4px; max-height: 200px; object-fit: cover; }
+        
+        /* SLEEK MOBILITY EXIT COMPONENT LAYOUTS */
+        .logout-btn-header { background: rgba(255, 77, 77, 0.2); border: 1px solid rgba(255, 77, 77, 0.3); color: #ff8585; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; width: auto; margin: 0; }
+        .logout-btn-header:active { background: rgba(255, 77, 77, 0.4); }
         .swipe-container { position: relative; width: 100%; overflow: hidden; border-radius: 14px; background: rgba(255, 255, 255, 0.03); height: 50px; margin-bottom: 4px; flex-shrink: 0; }
         .row { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; background: rgba(255,255,255,0.05); border-radius: 14px; font-size: 15px; cursor: pointer; box-sizing: border-box; transition: transform 0.2s ease; will-change: transform; z-index: 2; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
         .swipe-btn { position: absolute; right: 0; top: 0; height: 100%; width: 80px; background: transparent; color: #ff4d4d; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; z-index: 1; cursor: pointer; border-radius: 0 14px 14px 0; letter-spacing: 0.5px; }
@@ -62,14 +66,19 @@
         <button style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);" onclick="appRegister()">Зарегистрироваться</button>
     </div>
     <div id="boxMain" class="win">
-        <div style="display: flex; align-items: center; justify-content: center; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px;">
+        <!-- НАВИГАЦИОННАЯ ПАНЕЛЬ С КНОПКОЙ ВЫХОДА -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px; height: 40px; flex-shrink: 0;">
             <span style="font-size: 13px; font-weight: bold; color: rgba(255,255,255,0.5);">(МСБ55115) МЕССЕНДЖЕР</span>
+            <div class="logout-btn-header" onclick="appLogout()">Выйти 🚪</div>
         </div>
+        
         <h4 id="lblUser" style="color: #4fc3f7; font-size:14px; text-align:left; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 10px;">Вы: ...</h4>
+        
         <div id="adminPanel" class="admin-section">
             <h4 style="font-size: 13px; color: #ff8585; text-align: left; margin-bottom: 6px;">🛠️ Управление (Админ)</h4>
             <div class="box" id="adminUsersList" style="height: 80px; background: rgba(0,0,0,0.3);"></div>
         </div>
+        
         <div style="position: relative; margin-bottom: 15px; display: flex; align-items: center;">
             <input type="text" id="searchIdInp" placeholder="Поиск контактов по ID..." style="margin: 0; padding-right: 85px; width: 100%; height: 46px;">
             <button style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: #28a745; width: auto; padding: 0 14px; height: 34px; margin: 0; font-size: 13px; border-radius: 10px;" onclick="actionFindAndAdd()">Найти</button>
@@ -77,13 +86,17 @@
         <h4 style="text-align: left; font-size: 13px; margin: 5px 4px; color: rgba(255,255,255,0.4); text-transform: uppercase;">Мои Диалоги:</h4>
         <div class="box" id="areaUsers" style="flex: 1;">Загрузка контактов...</div>
     </div>
+
     <div id="boxChatRoom" class="win" style="padding: 12px 14px 16px 14px;">
+        <!-- ШАПКА ЧАТА С КНОПКАМИ НАЗАД И ВЫХОД -->
         <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px; height: 40px; flex-shrink: 0;">
             <div style="font-size: 16px; font-weight: bold; color: #2481cc; cursor: pointer; padding: 4px 8px 4px 0;" onclick="backToMainSearch()">⬅ Назад</div>
-            <h4 style="margin: 0; font-size: 16px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span id="chatTargetLabel">@чат</span></h4>
-            <div style="width: 55px;"></div> 
+            <h4 style="margin: 0; font-size: 16px; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span id="chatTargetLabel">@чат</span></h4>
+            <div class="logout-btn-header" onclick="appLogout()">Выйти 🚪</div>
         </div>
+        
         <div class="box" id="areaMessages" style="flex: 1; margin-bottom: 10px; background: transparent; border: none; padding: 4px 0;">Загрузка истории...</div>
+        
         <div style="position: relative; width: 100%; display: flex; align-items: center; flex-shrink: 0; margin-top: auto;">
             <div id="emojiPopTray" class="tg-emoji-pop">
                 <span class="tg-icon-btn" onclick="addEmoji('😀')">😀</span><span class="tg-icon-btn" onclick="addEmoji('😂')">😂</span><span class="tg-icon-btn" onclick="addEmoji('👍')">👍</span><span class="tg-icon-btn" onclick="addEmoji('❤️')">❤️</span>
@@ -101,7 +114,7 @@
         </div>
     </div>
 <script>
-    let myAccount = "", myID = "", chatWith = "", chatTimer = null, globalMonitorTimer = null;
+    let myAccount = "", myID = "", chatWith = "", chatTimer = null, globalMonitorTimer = null, heartbeatTimer = null;
     let attachedFile = null; let totalMessagesCount = {}; let isFirstLoadForRoom = {}; let globalKnownMessages = {};
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
     const msgSound = new Audio("https://mixkit.co");
@@ -167,11 +180,38 @@
                 document.getElementById("lblUser").innerText = "Вы: " + myAccount + " (ID: " + myID + ")";
                 window.OneSignalDeferred.push(function(OneSignal) { OneSignal.login(myAccount); if (OneSignal.Notifications) { OneSignal.Notifications.requestPermission(); } });
                 if (myAccount === "admin") { document.getElementById("adminPanel").style.display = "block"; loadAdminUsersList(); }
-                setInterval(() => { fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(Date.now()) }); }, 10000);
+                
+                // Запуск пульсации «В сети»
+                if (heartbeatTimer) clearInterval(heartbeatTimer);
+                heartbeatTimer = setInterval(() => { fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(Date.now()) }); }, 10000);
+                
                 actionLoadMyContacts();
                 startGlobalMessageMonitoring();
             } else { status.innerText = "Неверный логин или пароль!"; }
         }).catch(() => { status.innerText = "Ошибка сервера (нет связи)!"; });
+    }
+
+    // НОВАЯ ФУНКЦИЯ КРАСИВОГО И БЕЗОПАСНОГО ВЫХОДА ИЗ СЕССИИ
+    function appLogout() {
+        if (!confirm("Вы действительно хотите выйти из аккаунта?")) return;
+        if (chatTimer) clearInterval(chatTimer);
+        if (globalMonitorTimer) clearInterval(globalMonitorTimer);
+        if (heartbeatTimer) clearInterval(heartbeatTimer);
+        
+        // Перед уходом принудительно ставим статус «офлайн» в базе данных
+        fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(0) })
+        .then(() => {
+            if (chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); }
+            myAccount = ""; myID = ""; chatWith = ""; totalMessagesCount = {}; isFirstLoadForRoom = {};
+            
+            // Плавное переключение экранов назад к окну входа
+            document.getElementById("boxMain").classList.remove("active");
+            document.getElementById("boxChatRoom").classList.remove("active");
+            const status = document.getElementById("authStatus");
+            status.style.color = "#28a745"; status.innerText = "Вы успешно вышли из системы.";
+            
+            setTimeout(() => { document.getElementById("boxAuth").classList.add("active"); }, 50);
+        });
     }
     
     function startGlobalMessageMonitoring() {
