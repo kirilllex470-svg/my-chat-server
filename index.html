@@ -6,33 +6,41 @@
     <title>Мой Чат</title>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733",
-    });
-  });
-</script>
+    <script src="https://onesignal.com" defer></script>
     <style>
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 10px; display: flex; justify-content: center; align-items: center; height: 100vh; box-sizing: border-box; color: #fff; }
-        .win { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 20px; border-radius: 24px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.18); width: 100%; max-width: 420px; height: 95vh; display: none; flex-direction: column; box-sizing: border-box; }
-        .active { display: flex; animation: fadeIn 0.4s ease-out forwards; }
+        /* HORIZONTAL SLIDING VIEW TRANSITION ENGINE */
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes bubblePop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 10px; display: flex; justify-content: center; align-items: center; height: 100vh; box-sizing: border-box; color: #fff; overflow: hidden; }
+        .win { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 20px; border-radius: 24px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.18); width: 100%; max-width: 420px; height: 95vh; display: none; flex-direction: column; box-sizing: border-box; will-change: transform, opacity; }
+        
+        /* Active windows glide horizontally from the right side */
+        .active { display: flex; animation: slideInRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        
         h3, h4 { margin: 0 0 12px 0; font-weight: 600; text-align: center; }
         input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); border-radius: 12px; font-size: 14px; box-sizing: border-box; color: #fff; outline: none; }
         textarea { height: 50px; resize: none; }
-        button { width: 100%; color: white; border: none; padding: 12px; font-size: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; margin-bottom: 8px; }
+        button { width: 100%; color: white; border: none; padding: 12px; font-size: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; margin-bottom: 8px; transition: 0.2s; }
+        button:hover { filter: brightness(1.15); }
         .box { border: 1px solid rgba(255,255,255,0.1); padding: 10px; background: rgba(0, 0, 0, 0.15); border-radius: 14px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
-        .msg { padding: 10px 14px; border-radius: 16px; max-width: 75%; font-size: 14px; word-wrap: break-word; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        
+        /* Message bubbles scale up cleanly on fresh incoming feeds */
+        .msg { padding: 10px 14px; border-radius: 16px; max-width: 75%; font-size: 14px; word-wrap: break-word; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.1); animation: bubblePop 0.18s ease-out; }
         .msg.my { background: #007bff; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
         .msg.other { background: rgba(255,255,255,0.2); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg img { max-width: 100%; border-radius: 10px; margin-top: 4px; max-height: 180px; object-fit: cover; }
-        .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.05); margin-bottom: 4px; border-radius: 10px; font-size: 13px; cursor: pointer; }
+        .row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); margin-bottom: 6px; border-radius: 12px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .row:hover { background: rgba(255,255,255,0.15); transform: translateX(2px); }
         .emoji-bar { display: flex; gap: 8px; margin-bottom: 10px; font-size: 20px; background: rgba(255,255,255,0.08); padding: 6px; border-radius: 12px; overflow-x: auto; justify-content: center; }
-        .emoji-btn { cursor: pointer; }
-        .file-label { background: rgba(255,255,255,0.15); color: white; padding: 10px; border-radius: 12px; text-align: center; font-size: 13px; cursor: pointer; display: block; margin-bottom: 10px; font-weight: bold; border: 1px dashed rgba(255,255,255,0.3); }
+        .emoji-btn { cursor: pointer; transition: transform 0.15s; }
+        .emoji-btn:hover { transform: scale(1.25); }
+        .file-label { background: rgba(255,255,255,0.15); color: white; padding: 10px; border-radius: 12px; text-align: center; font-size: 13px; cursor: pointer; display: block; margin-bottom: 10px; font-weight: bold; border: 1px dashed rgba(255,255,255,0.3); transition: 0.2s; }
         .admin-section { background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 14px; padding: 10px; margin-bottom: 10px; display: none; }
         .in-app-alert { position: fixed; top: -80px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 380px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px 16px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 9999; display: flex; flex-direction: column; gap: 4px; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
         .in-app-alert.show { top: 20px; }
@@ -45,6 +53,7 @@
         <span id="inAppTitle" class="in-app-title">Новое сообщение</span>
         <span id="inAppBody" class="in-app-body">Текст...</span>
     </div>
+<!-- LOGIN & REGISTRATION LAYOUT LAYER -->
 <div id="boxAuth" class="win active">
     <div style="text-align: center; margin-bottom: 15px;"><span style="font-weight: bold; font-size: 16px;">(МСБ55115) мессенджер v.001</span></div>
     <h3>🔑 Вход и Регистрация</h3>
@@ -56,30 +65,47 @@
     <button style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);" onclick="appRegister()">Зарегистрироваться</button>
 </div>
 
+<!-- DASHBOARD AND ISOLATED SEARCH DISPLAY WINDOW -->
 <div id="boxMain" class="win">
     <div style="text-align: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span style="font-size: 13px; color: rgba(255,255,255,0.7);">(МСБ55115) мессенджер v.001</span></div>
-    <h4 id="lblUser" style="color: rgba(255,255,255,0.8); font-size:14px; text-align:left;">Вы: </h4>
+    <h4 id="lblUser" style="color: rgba(255,255,255,0.8); font-size:14px; text-align:left; margin-bottom: 15px;">Вы: </h4>
+    
     <div id="adminPanel" class="admin-section">
         <h4 style="font-size: 13px; color: #ff8585; text-align: left; margin-bottom: 6px;">🛠️ Управление (Админ)</h4>
         <div class="box" id="adminUsersList" style="height: 70px; background: rgba(0,0,0,0.3);"></div>
     </div>
-    <div style="display:flex; gap:8px; margin-bottom: 4px;">
-        <input type="text" id="searchIdInp" placeholder="Поиск по ID..." style="margin:0;">
-        <button style="background:#28a745; width:95px; padding:0; height:43px; margin:0;" onclick="actionFindAndAdd()">+ Добавить</button>
+    
+    <!-- EMBEDDED SLENDER SEARCH ELEMENT -->
+    <div style="position: relative; margin-bottom: 15px; display: flex; align-items: center;">
+        <input type="text" id="searchIdInp" placeholder="Введите ID для поиска..." style="margin: 0; padding-right: 75px; width: 100%;">
+        <button style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: #28a745; width: auto; padding: 6px 10px; height: 32px; margin: 0; font-size: 12px; border-radius: 8px;" onclick="actionFindAndAdd()">+ Найти</button>
     </div>
-    <div class="box" id="areaUsers" style="height:90px; margin-bottom:12px;">Загрузка контактов...</div>
-    <h4 style="margin:5px 0 10px 0; font-size:14px; text-align:left;">💬 Чат: <span id="chatTargetLabel" style="background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:8px;">не выбран</span></h4>
-    <div class="box" id="areaMessages" style="flex:1; margin-bottom:10px;">Выберите человека из списка выше</div>
+
+    <h4 style="text-align: left; font-size: 14px; margin: 5px 0; color: rgba(255,255,255,0.6);">Найденные пользователи:</h4>
+    <div class="box" id="areaUsers" style="flex: 1;">Введите ID сверху, чтобы найти человека...</div>
+</div>
+<!-- PRIVATE SEPARATE DIALOG ROOM CONTAINER -->
+<div id="boxChatRoom" class="win">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <button style="width: auto; padding: 6px 12px; background: rgba(255,255,255,0.15); margin: 0; font-size: 13px; height: 32px;" onclick="backToMainSearch()">⬅ Назад</button>
+        <h4 style="margin: 0; font-size: 15px;">💬 Чат: <span id="chatTargetLabel" style="background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:8px;">не выбран</span></h4>
+        <div style="width: 65px;"></div>
+    </div>
+    
+    <div class="box" id="areaMessages" style="flex: 1; margin-bottom: 10px;">Загрузка сообщений...</div>
+    
     <div class="emoji-bar">
         <span class="emoji-btn" onclick="addEmoji('😀')">😀</span><span class="emoji-btn" onclick="addEmoji('😂')">😂</span><span class="emoji-btn" onclick="addEmoji('👍')">👍</span><span class="emoji-btn" onclick="addEmoji('❤️')">❤️</span>
         <span class="emoji-btn" onclick="addEmoji('🔥')">🔥</span><span class="emoji-btn" onclick="addEmoji('🎉')">🎉</span><span class="emoji-btn" onclick="addEmoji('😮')">😮</span><span class="emoji-btn" onclick="addEmoji('😢')">😢</span>
     </div>
+    
     <label class="file-label" id="fileLabelBtn">📎 Прикрепить картинку или файл
         <input type="file" id="fileInp" style="display:none;" onchange="handleFileSelect(this)">
     </label>
-    <textarea id="textInp" placeholder="Наберите text сообщения... (Enter для отправки)" onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
-    <button style="background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); margin:0;" onclick="actionSend()">Отправить</button>
+    <textarea id="textInp" placeholder="Наберите сообщение... (Enter для отправки)" onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
+    <button style="background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); margin:0;" onclick="actionSend()">Отправить 🚀</button>
 </div>
+
 <script>
     let myAccount = "", myID = "", chatWith = "", chatTimer = null;
     let attachedFile = null; let totalMessagesCount = {};
@@ -135,22 +161,20 @@
         if (!log || !pas) { status.innerText = "Введите логин и пароль!"; return; }
         status.style.color = "#ff6b6b";
 
-        fetch("OneSignalSDKWorker.js")
-        .then(res => {
-            if (res.status === 404) {
-                status.innerText = "⚠️ Ошибка: Файл OneSignalSDKWorker.js не найден на Render! Пуши не придут.";
-                return;
-            }
+        fetch("OneSignalSDKWorker.js").then(res => {
+            if (res.status === 404) { status.innerText = "⚠️ Ошибка: Файл OneSignalSDKWorker.js не найден на Render! Пуши не придут."; return; }
             proceedWithLogin(log, pas, status);
-        })
-        .catch(() => { proceedWithLogin(log, pas, status); });
+        }).catch(() => { proceedWithLogin(log, pas, status); });
     }
     function proceedWithLogin(log, pas, status) {
         fetch(URL_FB + "users/" + log + ".json").then(r => r.json()).then(user => {
             if (user && user.password === pas) {
                 myAccount = log; myID = user.id;
+                
+                // MULTI-SCREEN SWITCHING ROUTE WITH MICRO-DELAYS FOR SMOOTH SLIDES
                 document.getElementById("boxAuth").classList.remove("active");
-                document.getElementById("boxMain").classList.add("active");
+                setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50);
+                
                 document.getElementById("lblUser").innerText = "Вы: " + myAccount + " (ID: " + myID + ")";
                 window.OneSignalDeferred.push(function(OneSignal) { OneSignal.login(myAccount); if (OneSignal.Notifications) { OneSignal.Notifications.requestPermission(); } });
                 if (myAccount === "admin") { document.getElementById("adminPanel").style.display = "block"; loadAdminUsersList(); }
@@ -165,36 +189,58 @@
         });
     }
     function adminDeleteUser(tLog) { if (confirm(`Удалить ${tLog}?`)) { fetch(URL_FB + "users/" + tLog + ".json", { method: "DELETE" }).then(() => { loadAdminUsersList(); actionLoadMyContacts(); }); } }
+    
     function actionFindAndAdd() {
         const searchId = document.getElementById("searchIdInp").value.trim(); if (!searchId) return;
         fetch(URL_FB + "users.json").then(r => r.json()).then(all => {
             let fLog = null; if (all) { Object.keys(all).forEach(l => { if (all[l] && String(all[l].id) === String(searchId)) fLog = l; }); }
-            if (fLog) { fetch(URL_FB + "contacts/" + myAccount + "/" + fLog + ".json", { method: "PUT", body: JSON.stringify({ id: searchId }) }).then(() => { document.getElementById("searchIdInp").value = ""; actionLoadMyContacts(); }); } else { alert("ID не найден!"); }
+            if (fLog) { 
+                if (fLog === myAccount) { alert("Нельзя добавить себя!"); return; }
+                fetch(URL_FB + "contacts/" + myAccount + "/" + fLog + ".json", { method: "PUT", body: JSON.stringify({ id: searchId }) }).then(() => { document.getElementById("searchIdInp").value = ""; actionLoadMyContacts(); }); 
+            } else { alert("Пользователь с таким ID не найден!"); }
         });
     }
     function actionLoadMyContacts() {
         fetch(URL_FB + "contacts/" + myAccount + ".json").then(r => r.json()).then(data => {
-            const area = document.getElementById("areaUsers"); area.innerHTML = data ? "" : "Пусто..."; if (!data) return;
-            Object.keys(data).forEach(log => { const r = document.createElement("div"); r.className = "row"; r.onclick = () => startPersonalChat(log); r.innerHTML = `<span>👤 <b>${log}</b></span> <button onclick="event.stopPropagation(); actionDelContact('${log}')">❌</button>`; area.appendChild(r); });
+            const area = document.getElementById("areaUsers"); area.innerHTML = data ? "" : "Список пуст. Найдите кого-нибудь по ID выше!"; if (!data) return;
+            Object.keys(data).forEach(log => { const r = document.createElement("div"); r.className = "row"; r.onclick = () => startPersonalChat(log); r.innerHTML = `<span>👤 <b>@${log}</b> (ID: ${data[log].id})</span> <button onclick="event.stopPropagation(); actionDelContact('${log}')">❌</button>`; area.appendChild(r); });
         });
     }
-    function actionDelContact(tLog) { if (confirm("Удалить?")) { fetch(URL_FB + "contacts/" + myAccount + "/" + tLog + ".json", { method: "DELETE" }).then(() => { actionLoadMyContacts(); }); } }
-    function startPersonalChat(tLog) { chatWith = tLog; document.getElementById("chatTargetLabel").innerText = tLog; if(chatTimer) clearInterval(chatTimer); loadMessages(); chatTimer = setInterval(loadMessages, 3000); }
+    function actionDelContact(tLog) { if (confirm("Удалить из найденных?")) { fetch(URL_FB + "contacts/" + myAccount + "/" + tLog + ".json", { method: "DELETE" }).then(() => { actionLoadMyContacts(); }); } }
     
+    function startPersonalChat(tLog) {
+        chatWith = tLog; document.getElementById("chatTargetLabel").innerText = "@" + tLog;
+        
+        // SLIDES INTO PRIVATE CHAT VIEW FORWARD RIGHT
+        document.getElementById("boxMain").classList.remove("active");
+        setTimeout(() => { document.getElementById("boxChatRoom").classList.add("active"); }, 50);
+        
+        if(chatTimer) clearInterval(chatTimer); loadMessages(); chatTimer = setInterval(loadMessages, 3000); 
+    }
+    function backToMainSearch() {
+        chatWith = ""; if(chatTimer) clearInterval(chatTimer);
+        
+        // SLIDES OUT CHAT ROOM VIEW BACK TO MAIN DECK
+        document.getElementById("boxChatRoom").classList.remove("active");
+        document.getElementById("areaMessages").innerHTML = "Загрузка сообщений...";
+        setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50);
+        
+        actionLoadMyContacts();
+    }
     function loadMessages() {
         if (!chatWith) return; const room = [myAccount, chatWith].sort().join("_");
         fetch(URL_FB + "messages/" + room + ".json").then(r => r.json()).then(data => {
-            const area = document.getElementById("areaMessages"); if (!data) { area.innerHTML = "Сообщений нет"; totalMessagesCount[room] = 0; return; }
+            const area = document.getElementById("areaMessages"); if (!data) { area.innerHTML = "Сообщений нет. Напишите первым!"; totalMessagesCount[room] = 0; return; }
             const msgIds = Object.keys(data).sort(); const serverCount = msgIds.length;
             if (totalMessagesCount[room] !== undefined && serverCount > totalMessagesCount[room]) {
-                const lastMsg = data[msgIds[msgIds.length - 1]];
-                if (lastMsg.sender !== myAccount) { triggerTopBanner(lastMsg.sender, lastMsg.text); }
+                const lastMsg = data[msgIds[msgIds.length - 1]]; if (lastMsg.sender !== myAccount) { triggerTopBanner(lastMsg.sender, lastMsg.text); }
             }
             totalMessagesCount[room] = serverCount; area.innerHTML = "";
             msgIds.forEach(id => {
                 const m = data[id]; const div = document.createElement("div"); div.className = "msg " + (m.sender === myAccount ? "my" : "other");
                 if (m.text) { div.innerHTML += `<span>${m.text}</span>`; }
                 if (m.file) { if (m.file.type?.startsWith("image/")) { div.innerHTML += `<img src="${m.file.data}">`; } else { div.innerHTML += `<a class="file-link" href="${m.file.data}" download="${m.file.name}">📂 ${m.file.name}</a>`; } }
+                if (m.time) { const d = new Date(m.time); div.innerHTML += `<span class="msg-time" style="font-size:10px; opacity:0.6; align-self:flex-end; margin-top:4px;">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`; }
                 area.appendChild(div);
             });
             area.scrollTop = area.scrollHeight;
@@ -205,7 +251,7 @@
         const room = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now();
         const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; if (attachedFile) bodyMsg.file = attachedFile;
         fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", body: JSON.stringify(bodyMsg) }).then(() => {
-            fetch("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js", {
+            fetch("https://onesignal.com", {
                 method: "POST",
                 headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" },
                 body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": `Новое от ${myAccount}` }, contents: { "en": text ? text : "Файл" } })
