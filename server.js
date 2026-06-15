@@ -1,23 +1,25 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
-app.use(express.text({ type: '*/*' }));
 
-// База данных в памяти
+// Разрешаем принимать большие файлы и картинки до 50 Мегабайт
+app.use(express.json({ limit: '50mb' }));
+app.use(express.text({ type: '*/*', limit: '50mb' }));
+
+// База данных в оперативной памяти сервера
 const db = {
     users: {},
     contacts: {},
     messages: {}
 };
 
-// Функция для красивого отображения времени в логах сервера
+// Функция для красивого вывода времени в логи Render
 function getFormattedTime() {
     const d = new Date();
-    // Сдвиг на Московское время (+3)
-    const offset = 3; 
+    const offset = 3; // Сдвиг на Московское время (+3)
     const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
     const nd = new Date(utc + (3600000 * offset));
     
@@ -60,17 +62,18 @@ app.put('/:folder/:subfolder/:file.json', (req, res) => {
 
     if (folder === 'contacts') {
         console.log(`\n=== 👥 НОВЫЙ КОНТАКТ [${getFormattedTime()}] ===`);
-        console.log(`Пользователь [ ${subfolder} ] добавил в друзья [ ${file} ]`);
+        console.log(`Пользователь [ ${subfolder} ] добавил [ ${file} ]`);
         console.log(`============================================\n`);
     }
 
     if (folder === 'messages') {
         console.log(`\n=== 💬 НОВОЕ СООБЩЕНИЕ [${getFormattedTime()}] ===`);
-        console.log(`Отправитель: [ ${data.sender} ] | Текст: "${data.text}"`);
+        console.log(`Отправитель: [ ${data.sender} ] | Есть файл: ${data.file ? 'ДА' : 'НЕТ'}`);
         console.log(`==============================================\n`);
     }
     res.json({ status: "success" });
 });
+
 // 2. Чтение данных (GET)
 app.get('/:folder.json', (req, res) => {
     const { folder } = req.params;
@@ -99,13 +102,13 @@ app.delete('/:folder/:subfolder/:file.json', (req, res) => {
     const { folder, subfolder, file } = req.params;
     if (db[folder] && db[folder][subfolder] && db[folder][subfolder][file]) {
         delete db[folder][subfolder][file];
-        if (folder === 'contacts') {
-            console.log(`\n=== ❌ УДАЛЕНИЕ КОНТАКТА [${getFormattedTime()}] ===`);
-            console.log(`Пользователь [ ${subfolder} ] удалил [ ${file} ]`);
-            console.log(`==============================================\n`);
-        }
     }
     res.json({ status: "deleted" });
+});
+
+// МАГИЯ ТУТ: Заставляем сервер открывать наш файл index.html как главный сайт!
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
