@@ -105,9 +105,10 @@ app.delete('/:folder/:subfolder/:file.json', (req, res) => {
     res.json({ status: "deleted" });
 });
 
-// ИСПРАВЛЕНИЕ: Принудительно заставляем сервер правильно отдавать файл OneSignal в интернет
+// ИСПРАВЛЕНИЕ НА 100%: Добавляем жесткие заголовки безопасности для браузеров
 app.get('/OneSignalSDKWorker.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Service-Worker-Allowed', '/'); // Разрешаем работу во всем корне сайта
     res.sendFile(path.join(__dirname, 'OneSignalSDKWorker.js'));
 });
 
