@@ -103,22 +103,28 @@
     <button style="background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); margin:0;" onclick="actionSend()">Отправить</button>
 </div>
 <script>
-let myAccount = "", myID = "", chatWith = "", chatTimer = null;
+    let myAccount = "", myID = "", chatWith = "", chatTimer = null;
     let attachedFile = null; 
 
-    // НАСТРОЙКА УВЕДОМЛЕНИЙ ONESIGNAL (НАСТРОЕНО АВТОМАТИЧЕСКИ)
+    // НАСТРОЙКА УВЕДОМЛЕНИЙ ONESIGNAL (СПЕЦИАЛЬНЫЙ РЕЖИМ ДЛЯ GITHUB PAGES)
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
             appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733",
             autoRegister: true,
-            notifyButton: { enable: false },
-            // ВОТ ОНИ! Прописали настройки папок прямо в код чата:
+            // Включаем встроенный колокольчик OneSignal, чтобы пользователь мог нажать на него вручную
+            notifyButton: { 
+                enable: true,
+                position: 'bottom-right',
+                size: 'medium'
+            },
+            // Разрешаем OneSignal открывать отдельное окно для обхода блокировок браузера
+            httpPermissionRequest: { enable: true },
             workerPath: "OneSignalSDKWorker.js",
             registrationScope: "./"
         });
         
-        // Принудительно запрашиваем пуши у телефона при входе
+        // Жесткая привязка при входе в чат
         if (myAccount) {
             OneSignal.login(myAccount);
             if (OneSignal.Notifications) {
@@ -126,6 +132,7 @@ let myAccount = "", myID = "", chatWith = "", chatTimer = null;
             }
         }
     });
+
 
     // ==================== ВСТАВЬТЕ ВАШУ ССЫЛКУ ОТ RENDER СЮДА ====================
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
