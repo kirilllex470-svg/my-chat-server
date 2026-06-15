@@ -103,23 +103,29 @@
     <button style="background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); margin:0;" onclick="actionSend()">Отправить</button>
 </div>
 <script>
-    let myAccount = "", myID = "", chatWith = "", chatTimer = null;
+let myAccount = "", myID = "", chatWith = "", chatTimer = null;
     let attachedFile = null; 
 
-    // НАСТРОЙКА УВЕДОМЛЕНИЙ ONESIGNAL
+    // НАСТРОЙКА УВЕДОМЛЕНИЙ ONESIGNAL (НАСТРОЕНО АВТОМАТИЧЕСКИ)
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-            appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733", // Ваш рабочий App ID
-            notifyButton: { 
-                enable: true,
-                position: 'bottom-right' // Принудительно прижимаем колокольчик к правому нижнему углу
-            }
+            appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733",
+            autoRegister: true,
+            notifyButton: { enable: false },
+            // ВОТ ОНИ! Прописали настройки папок прямо в код чата:
+            workerPath: "OneSignalSDKWorker.js",
+            registrationScope: "./"
         });
         
-        if (myAccount) { OneSignal.login(myAccount); }
+        // Принудительно запрашиваем пуши у телефона при входе
+        if (myAccount) {
+            OneSignal.login(myAccount);
+            if (OneSignal.Notifications) {
+                OneSignal.Notifications.requestPermission();
+            }
+        }
     });
-
 
     // ==================== ВСТАВЬТЕ ВАШУ ССЫЛКУ ОТ RENDER СЮДА ====================
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
