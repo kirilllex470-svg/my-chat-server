@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Мой Чат</title>
+    <title>МСБ55115</title>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,14 +11,18 @@
     <style>
         @keyframes slideInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
         @keyframes bubblePop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+        
         html, body { position: fixed; width: 100%; height: 100%; overflow: hidden; background: #1e1135; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1d2671 0%, #c33764 100%); display: flex; justify-content: center; align-items: center; box-sizing: border-box; color: #fff; user-select: none; -webkit-user-select: none; }
+        
         .win { background: rgba(20, 20, 35, 0.45); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 16px; width: 100%; max-width: 480px; height: 100dvh; display: none; flex-direction: column; box-sizing: border-box; will-change: transform, opacity; }
         .active { display: flex; animation: slideInRight 0.28s cubic-bezier(0.32, 0.94, 0.6, 1) forwards; }
+        
         h3, h4 { margin: 0 0 12px 0; font-weight: 600; text-align: center; font-size: 16px; }
         input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); border-radius: 14px; font-size: 16px; box-sizing: border-box; color: #fff; outline: none; -webkit-appearance: none; }
         button { width: 100%; color: white; border: none; padding: 14px; font-size: 15px; border-radius: 14px; cursor: pointer; font-weight: bold; margin-bottom: 8px; transition: opacity 0.1s; -webkit-tap-highlight-color: transparent; }
         button:active { opacity: 0.8; }
+        
         .box { border: 1px solid rgba(255,255,255,0.08); padding: 8px; background: rgba(0, 0, 0, 0.12); border-radius: 18px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 15px; word-wrap: break-word; display: flex; flex-direction: column; box-shadow: 0 1px 4px rgba(0,0,0,0.15); animation: bubblePop 0.15s cubic-bezier(0.1, 1, 0.1, 1); user-select: text; -webkit-user-select: text; }
         .msg.my { background: #2481cc; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
@@ -277,16 +281,23 @@
                     }
 
                     row.innerHTML = `
-                        <div style="display:flex; flex-direction:column; gap:2px;">
+                        <div style="display:flex; flex-direction:column; gap:2px; pointer-events:none;">
                             <span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>
                             ${presenceStatus}
                         </div>`;
                     
-                    const delBtn = document.createElement("div"); delBtn.className = "swipe-btn"; delBtn.innerText = "Удалить";
+                    const delBtn = document.createElement("div"); 
+                    delBtn.className = "swipe-btn"; 
+                    delBtn.innerText = "Удалить";
                     
-                    // FIXED: Pointer events and touch interception layers isolated
+                    // FIXED SWIPE INTERCEPTION FOR MOBILE PERFECTION
                     delBtn.style.pointerEvents = "auto";
-                    delBtn.ontouchstart = (e) => { e.stopPropagation(); };
+                    delBtn.addEventListener("touchstart", (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        actionDelContact(log);
+                    }, { passive: false });
+
                     delBtn.onclick = (e) => { 
                         e.stopPropagation(); 
                         e.preventDefault();
