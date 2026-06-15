@@ -168,7 +168,7 @@
             if (fLog) { if (fLog === myAccount) { alert("Нельзя добавить себя!"); return; } fetch(URL_FB + "contacts/" + myAccount + "/" + fLog + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: searchId }) }).then(() => { document.getElementById("searchIdInp").value = ""; actionLoadMyContacts(); }); } else { alert("ID не найден!"); }
         });
     }
-    function actionLoadMyContacts() {
+      function actionLoadMyContacts() {
         fetch(URL_FB + "contacts/" + myAccount + ".json").then(r => r.json()).then(data => {
             const area = document.getElementById("areaUsers"); area.innerHTML = data ? "" : "Список пуст. Найдите кого-нибудь по ID выше!"; if (!data) return;
             Object.keys(data).forEach(log => {
@@ -177,11 +177,62 @@
                 row.innerHTML = `<span>👤 <b>@${log}</b> (ID: ${data[log].id})</span>`;
                 const delBtn = document.createElement("div"); delBtn.className = "swipe-btn"; delBtn.innerText = "Удалить";
                 delBtn.onclick = (e) => { e.stopPropagation(); actionDelContact(log); };
-                let startX = 0, currentX = 0, isSwiping = false;
-                row.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; isSwiping = true; row.style.transition = "none"; });
-                row.addEventListener("touchmove", (e) => { if (!isSwiping) return; currentX = e.touches[0].clientX; let diffX = currentX - startX; if (diffX < 0 && diffX > -70) { row.style.transform = `translateX(${diffX}px)`; } });
-                row.addEventListener("touchend", () => { isSwiping = false; row.style.transition = "transform 0.2s ease"; let diffX = currentX - startX; if (diffX <= -35) { row.style.transform = "translateX(-70px)"; } else { row.style.transform = "translateX(0)"; } });
-                row.onclick = () => { if (row.style.transform === "translateX(-70px)") { row.style.transform = "translateX(0)"; } else { startPersonalChat(log); } };
+                
+                // HIGH PRECISION TOUCH RADAR VARIABLES
+                let startX = 0, startY = 0, currentX = 0, currentY = 0, isSwiping = false, hasMoved = false;
+                
+                row.addEventListener("touchstart", (e) => { 
+                    startX = e.touches[0].clientX; 
+                    startY = e.touches[0].clientY; 
+                    isSwiping = true; 
+                    hasMoved = false;
+                    row.style.transition = "none"; 
+                }, { passive: true });
+                
+                row.addEventListener("touchmove", (e) => { 
+                    if (!isSwiping) return; 
+                    currentX = e.touches[0].clientX; 
+                    currentY = e.touches[0].clientY; 
+                    let diffX = currentX - startX; 
+                    let diffY = currentY - startY;
+                    
+                    // If the user scrolls vertically up/down, kill the side swipe logic
+                    if (Math.abs(diffY) > Math.abs(diffX)) {
+                        isSwiping = false;
+                        row.style.transform = "translateX(0)";
+                        return;
+                    }
+                    
+                    // Detect if the finger actually moved left horizontally
+                    if (diffX < -5) { 
+                        hasMoved = true;
+                        if (diffX > -70) row.style.transform = `translateX(${diffX}px)`; 
+                    } 
+                }, { passive: true });
+                
+                row.addEventListener("touchend", () => { 
+                    isSwiping = false; 
+                    row.style.transition = "transform 0.2s ease"; 
+                    let diffX = currentX - startX; 
+                    
+                    if (hasMoved && diffX <= -35) { 
+                        row.style.transform = "translateX(-70px)"; 
+                    } else { 
+                        row.style.transform = "translateX(0)"; 
+                    } 
+                });
+                
+                // INSTANT MOBILE CLICK HANDLER
+                row.onclick = () => { 
+                    // If the swipe delete menu is currently revealed, shut it clean first
+                    if (row.style.transform === "translateX(-70px)") { 
+                        row.style.transform = "translateX(0)"; 
+                    } else if (!hasMoved) { 
+                        // If the finger did not drag left, open the chat box instantly!
+                        startPersonalChat(log); 
+                    }
+                };
+                
                 container.appendChild(delBtn); container.appendChild(row); area.appendChild(container);
             });
         });
