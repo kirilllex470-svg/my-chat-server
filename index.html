@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мой Чат</title>
+    <!-- ИСПРАВЛЕНИЕ: Новый правильный тег для мобильных приложений PWA -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <!-- Official OneSignal Web SDK Script -->
+    <!-- Подключаем официальную библиотеку OneSignal (СТРОГО ОДИН РАЗ ТУТ!) -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -47,6 +49,7 @@
         .admin-section { background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 14px; padding: 10px; margin-bottom: 10px; display: none; }
     </style>
 </head>
+
 <body>
 
 <!-- ЭКРАН ВХОДА -->
@@ -106,14 +109,14 @@
     let myAccount = "", myID = "", chatWith = "", chatTimer = null;
     let attachedFile = null; 
 
-    // Настройка Web Old OneSignal Web Push (Настроено на автоматический запуск токена)
+    // ИСПРАВЛЕННАЯ НАСТРОЙКА ONESIGNAL ДЛЯ RENDER (БЕЗ ДУБЛИКАТОВ И ОШИБОК 404)
     window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
+    window.OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
             appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733",
             autoRegister: true,
             notifyButton: { enable: true, position: 'bottom-right' },
-            // ВАЖНО: Маршруты для принудительного создания Push токена на хостинге Render
+            // УДАЛИЛИ /my-chat-server/, теперь пути чистые для Render!
             workerPath: "OneSignalSDKWorker.js",
             registrationScope: "/"
         });
@@ -174,7 +177,6 @@
                 document.getElementById("boxMain").classList.add("active");
                 document.getElementById("lblUser").innerText = "Вы: " + myAccount + " (ID: " + myID + ")";
                 
-                // Привязываем аккаунт в OneSignal сразу после ввода логина
                 window.OneSignalDeferred = window.OneSignalDeferred || [];
                 window.OneSignalDeferred.push(function(OneSignal) {
                     OneSignal.login(myAccount);
