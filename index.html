@@ -140,12 +140,11 @@
         await OneSignal.init({ appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733", autoRegister: true, notifyButton: { enable: false }, workerPath: "OneSignalSDKWorker.js", registrationScope: "/" });
         if (myAccount) { OneSignal.login(myAccount); }
     });
-    function toggleEmojiTray(event) { event.stopPropagation(); document.getElementById("emojiPopTray").classList.toggle("open"); }
+   function toggleEmojiTray(event) { event.stopPropagation(); document.getElementById("emojiPopTray").classList.toggle("open"); }
     document.addEventListener("click", function() { document.getElementById("emojiPopTray").classList.remove("open"); });
     function triggerTopBanner(sender, text) { const b = document.getElementById("inAppNotification"); document.getElementById("inAppTitle").innerText = `💬 Новое от @${sender}`; document.getElementById("inAppBody").innerText = text ? text : "📎 Отправил вам файл"; b.classList.add("show"); setTimeout(closeInAppAlert, 4000); }
     function closeInAppAlert() { document.getElementById("inAppNotification").classList.remove("show"); }
     function addEmoji(emoji) { const input = document.getElementById("textInp"); input.value += emoji; input.focus(); }
-    
     function handleFileSelect(input) {
         const file = input.files; if (!file) return;
         if (file.size > 2 * 1024 * 1024) { alert("Файл слишком большой! Максимум 2 МБ."); input.value = ""; return; }
@@ -154,71 +153,128 @@
         reader.readAsDataURL(file);
     }
 
-    // NEW LOGIC ENGINE: CAPTURES, COMPRESSES AND WRITES PROFILE IMAGES BASE64 TARGET SECTOR
-    function handleAvatarUpload(input) {
-        const file = input.files[0]; if (!file) return;
-        if (file.size > 1 * 1024 * 1024) { alert("Фото слишком тяжелое! Лимит 1 МБ."); return; }
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const base64Data = e.target.result;
-            document.getElementById("myAvatarDisplay").src = base64Data;
-            
-            // Push profile image base64 node to live user accounts collection
-            fetch(URL_FB + "users/" + myAccount + "/avatar.json", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(base64Data)
-            }).then(() => actionLoadMyContacts());
-        };
-        reader.readAsDataURL(file);
-    }
-
+    // НАДЕЖНАЯ РЕГИСТРАЦИЯ: Записывает данные строго по адресу юзера
     function appRegister() {
-        const log = document.getElementById("loginInp").value.trim().toLowerCase(); const pas = document.getElementById("passInp").value; const customID = document.getElementById("idInp").value.trim(); const status = document.getElementById("authStatus");
-        if (!log || !pas || !customID) { status.innerText = "Заполните все поля!"; return; } status.innerText = "Регистрация...";
-        fetch(URL_FB + "users.json").then(r => r.json()).then(allUsers => {
-            if (allUsers && allUsers[log]) { status.innerText = "Логин занят!"; return; }
-            if (allUsers && Object.keys(allUsers).some(u => String(allUsers[u].id) === String(customID))) { status.innerText = "Этот ID уже занят!"; return; }
-            return fetch(URL_FB + "users/" + log + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pas, id: customID, lastSeen: Date.now() }) });
-        }).then(res => { if(res) { status.style.color = "#28a745"; status.innerText = "Успешно! Теперь нажмите 'Войти'"; } }).catch(() => { status.innerText = "Ошибка сети при регистрации!"; });
+        const log = document.getElementById("loginInp").value.trim().toLowerCase();
+        const pas = document.getElementById("passInp").value;
+        const customID = document.getElementById("idInp").value.trim();
+        const status = document.getElementById("authStatus");
+        if (!log || !pas || !customID) { status.innerText = "Заполните все поля!"; return; }
+        status.innerText = "Регистрация...";
+        
+        // Проверяем существование конкретного логина напрямую
+        fetch(URL_FB + "users/" + log + ".json")
+        .then(r => r.json())
+        .then(exists => {
+            if (exists) { status.innerText = "Логин занят!"; return; }
+            
+            // Сохраняем строго в свою ячейку
+            return fetch(URL_FB + "users/" + log + ".json", { 
+                method: "PUT", 
+                headers: { "Content-Type": "application/json" }, 
+                body: JSON.stringify({ password: pas, id: customID, lastSeen: Date.now() }) 
+            });
+        })
+        .then(res => { if(res) { status.style.color = "#28a745"; status.innerText = "Успешно! Теперь нажмите 'Войти'"; } })
+        .catch(() => { status.innerText = "Ошибка сети при регистрации!"; });
     }
 
+    // ИСПРАВЛЕННЫЙ ВХОД: Читает файл пользователя напрямую
     function appLogin() {
-        const log = document.getElementById("loginInp").value.trim().toLowerCase(); const pas = document.getElementById("passInp").value; const status = document.getElementById("authStatus"); if (!log || !pas) { status.innerText = "Введите логин и пароль!"; return; }
+        const log = document.getElementById("loginInp").value.trim().toLowerCase();
+        const pas = document.getElementById("passInp").value;
+        const status = document.getElementById("authStatus");
+        if (!log || !pas) { status.innerText = "Введите логин и пароль!"; return; }
         status.style.color = "#ff6b6b"; status.innerText = "Проверка...";
+        
         fetch("OneSignalSDKWorker.js").then(res => { if (res.status === 404) { status.innerText = "⚠️ Ошибка: Нет OneSignalSDKWorker.js на сервере!"; } }).catch(() => {});
-        fetch(URL_FB + "users/" + log + ".json").then(r => r.json()).then(user => {
-            if (user && user.password === pas) {
-                myAccount = log; myID = user.id;
-                if (user.avatar) document.getElementById("myAvatarDisplay").src = user.avatar; // Restore local avatar
+        
+        // Запрашиваем файл конкретного пользователя напрямую со стабильного JSON-пути
+        fetch(URL_FB + "users/" + log + ".json")
+        .then(r => r.json())
+        .then(user => {
+            // Проверяем, существует ли юзер и совпадает ли пароль
+            if (user && String(user.password) === String(pas)) {
+                myAccount = log; 
+                myID = user.id;
+                
                 document.getElementById("boxAuth").classList.remove("active");
                 setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50);
                 document.getElementById("lblUser").innerText = "Вы: " + myAccount + " (ID: " + myID + ")";
+                
                 window.OneSignalDeferred.push(function(OneSignal) { OneSignal.login(myAccount); if (OneSignal.Notifications) { OneSignal.Notifications.requestPermission(); } });
                 if (myAccount === "admin") { document.getElementById("adminPanel").style.display = "block"; loadAdminUsersList(); }
+                
+                // Запускаем постоянное обновление статуса «В сети»
                 setInterval(() => { fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(Date.now()) }); }, 10000);
-                actionLoadMyContacts(); startGlobalMessageMonitoring();
-            } else { status.innerText = "Неверный логин или пароль!"; }
-        }).catch(() => { status.innerText = "Ошибка авторизации (нет связи)!"; });
+                
+                actionLoadMyContacts();
+                startGlobalMessageMonitoring();
+            } else { 
+                status.innerText = "Неверный логин или пароль!"; 
+            }
+        }).catch(() => { status.innerText = "Ошибка сервера (нет связи)!"; });
     }
+
     function startGlobalMessageMonitoring() {
         if (globalMonitorTimer) clearInterval(globalMonitorTimer);
-        fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => { if (allRooms) { Object.keys(allRooms).forEach(room => { if (room.includes(myAccount)) { Object.keys(allRooms[room]).forEach(msgId => { globalKnownMessages[msgId] = true; }); } }); } });
+        fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => {
+            if (allRooms) {
+                Object.keys(allRooms).forEach(room => {
+                    if (!room.includes(myAccount)) return;
+                    Object.keys(allRooms[room]).forEach(msgId => { globalKnownMessages[msgId] = true; });
+                });
+            }
+        });
         globalMonitorTimer = setInterval(() => {
             fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => {
                 if (!allRooms) return;
                 Object.keys(allRooms).forEach(room => {
                     if (!room.includes(myAccount)) return;
                     Object.keys(allRooms[room]).forEach(msgId => {
-                        const m = allRooms[room][msgId]; if (!m) return;
+                        const m = allRooms[room][msgId];
+                        if (!m) return;
                         if (!globalKnownMessages[msgId] && m.sender !== myAccount) {
-                            const senderPartner = room.replace(myAccount, "").replace("_", ""); if (chatWith !== senderPartner) { triggerTopBanner(m.sender, m.text); }
+                            const senderPartner = room.replace(myAccount, "").replace("_", "");
+                            if (chatWith !== senderPartner) { triggerTopBanner(m.sender, m.text); }
                         }
                         globalKnownMessages[msgId] = true;
                     });
                 });
             });
         }, 3000);
+    }
+
+    function loadAdminUsersList() {
+        fetch(URL_FB + "users.json").then(r => r.json()).then(data => {
+            const container = document.getElementById("adminUsersList"); container.innerHTML = ""; if (!data) return;
+            Object.keys(data).forEach(log => { if (log === "admin") return; const r = document.createElement("div"); r.className = "row"; r.style.position="static"; r.innerHTML = `<span>👤 <b>${log}</b></span> <button onclick="adminDeleteUser('${log}')">Стереть</button>`; container.appendChild(r); });
+        });
+    }
+    function adminDeleteUser(tLog) { if (confirm(`Удалить ${tLog}?`)) { fetch(URL_FB + "users/" + tLog + ".json", { method: "DELETE" }).then(() => { loadAdminUsersList(); actionLoadMyContacts(); }); } }
+    
+    function actionFindAndAdd() {
+        const searchId = document.getElementById("searchIdInp").value.trim(); if (!searchId) return;
+        fetch(URL_FB + "users.json")
+        .then(r => r.json())
+        .then(allUsers => {
+            let foundLog = null;
+            if (allUsers) {
+                Object.keys(allUsers).forEach(log => {
+                    if (allUsers[log] && String(allUsers[log].id).trim() === String(searchId).trim()) { foundLog = log; }
+                });
+            }
+            if (foundLog) {
+                if (foundLog === myAccount) { alert("Нельзя добавить самого себя!"); return; }
+                fetch(URL_FB + "contacts/" + myAccount + "/" + foundLog + ".json", { 
+                    method: "PUT", 
+                    headers: { "Content-Type": "application/json" }, 
+                    body: JSON.stringify({ id: searchId }) 
+                }).then(() => { document.getElementById("searchIdInp").value = ""; actionLoadMyContacts(); });
+            } else { 
+                alert("Пользователь с таким ID не зарегистрирован в системе!"); 
+            }
+        });
     }
     function loadAdminUsersList() {
         fetch(URL_FB + "users.json").then(r => r.json()).then(data => {
