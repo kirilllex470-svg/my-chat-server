@@ -8,44 +8,60 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://onesignal.com" defer></script>
     <style>
-        /* HORIZONTAL SLIDING VIEW TRANSITION ENGINE */
+        /* АНИМАЦИЯ СДВИГА ЭКРАНОВ ВБОК */
         @keyframes slideInRight {
             from { opacity: 0; transform: translateX(40px); }
             to { opacity: 1; transform: translateX(0); }
         }
+        /* АНИМАЦИЯ ПОЯВЛЕНИЯ СООБЩЕНИЙ */
         @keyframes bubblePop {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
+        
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 10px; display: flex; justify-content: center; align-items: center; height: 100vh; box-sizing: border-box; color: #fff; overflow: hidden; }
+        
         .win { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 20px; border-radius: 24px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.18); width: 100%; max-width: 420px; height: 95vh; display: none; flex-direction: column; box-sizing: border-box; will-change: transform, opacity; }
         
-        /* Active windows glide horizontally from the right side */
+        /* Класс для плавного переключения экранов */
         .active { display: flex; animation: slideInRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
         
         h3, h4 { margin: 0 0 12px 0; font-weight: 600; text-align: center; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); border-radius: 12px; font-size: 14px; box-sizing: border-box; color: #fff; outline: none; }
-        textarea { height: 50px; resize: none; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); border-radius: 12px; font-size: 14px; box-sizing: border-box; color: #fff; outline: none; }
+        
         button { width: 100%; color: white; border: none; padding: 12px; font-size: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; margin-bottom: 8px; transition: 0.2s; }
         button:hover { filter: brightness(1.15); }
+        
         .box { border: 1px solid rgba(255,255,255,0.1); padding: 10px; background: rgba(0, 0, 0, 0.15); border-radius: 14px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
         
-        /* Message bubbles scale up cleanly on fresh incoming feeds */
         .msg { padding: 10px 14px; border-radius: 16px; max-width: 75%; font-size: 14px; word-wrap: break-word; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.1); animation: bubblePop 0.18s ease-out; }
         .msg.my { background: #007bff; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
         .msg.other { background: rgba(255,255,255,0.2); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg img { max-width: 100%; border-radius: 10px; margin-top: 4px; max-height: 180px; object-fit: cover; }
+        
         .row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); margin-bottom: 6px; border-radius: 12px; font-size: 14px; cursor: pointer; transition: 0.2s; }
         .row:hover { background: rgba(255,255,255,0.15); transform: translateX(2px); }
-        .emoji-bar { display: flex; gap: 8px; margin-bottom: 10px; font-size: 20px; background: rgba(255,255,255,0.08); padding: 6px; border-radius: 12px; overflow-x: auto; justify-content: center; }
-        .emoji-btn { cursor: pointer; transition: transform 0.15s; }
-        .emoji-btn:hover { transform: scale(1.25); }
-        .file-label { background: rgba(255,255,255,0.15); color: white; padding: 10px; border-radius: 12px; text-align: center; font-size: 13px; cursor: pointer; display: block; margin-bottom: 10px; font-weight: bold; border: 1px dashed rgba(255,255,255,0.3); transition: 0.2s; }
+        
         .admin-section { background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 14px; padding: 10px; margin-bottom: 10px; display: none; }
-        .in-app-alert { position: fixed; top: -80px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 380px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px 16px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 9999; display: flex; flex-direction: column; gap: 4px; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+        
+        /* ВСПЛЫВАЮЩИЕ УВЕДОМЛЕНИЯ ВНУТРИ ПРИЛОЖЕНИЯ */
+        .in-app-alert { position: fixed; top: -80px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 380px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px 16px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 9999; display: flex; flex-direction: column; gap: 4px; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
         .in-app-alert.show { top: 20px; }
         .in-app-title { font-weight: bold; font-size: 13px; color: #81edff; }
         .in-app-body { font-size: 14px; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* СТИЛИ СТРОКИ ВВОДА ТЕКСТА TELEGRAM */
+        .tg-input-bar { display: flex; align-items: center; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 4px 10px; gap: 6px; margin-top: 5px; box-sizing: border-box; width: 100%; position: relative; }
+        .tg-field { flex: 1; background: transparent; border: none; outline: none; padding: 8px 2px; font-size: 14px; color: #fff; max-height: 80px; resize: none; font-family: inherit; }
+        .tg-field::placeholder { color: rgba(255,255,255,0.4); }
+        .tg-icon-btn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; border-radius: 50%; user-select: none; transition: background 0.2s; }
+        .tg-icon-btn:hover { background: rgba(255,255,255,0.12); }
+        .tg-send-btn { width: 34px; height: 34px; background: #007bff; color: white; display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; border-radius: 50%; border: none; outline: none; transition: 0.15s; padding: 0; margin-left: 4px; flex-shrink: 0; }
+        .tg-send-btn:hover { background: #0069d9; transform: scale(1.05); }
+        
+        /* ВСПЛЫВАЮЩЕЕ ПАНЕЛЬ СМОЙЛИКОВ */
+        .tg-emoji-pop { position: absolute; bottom: 55px; left: 10px; background: rgba(40, 30, 60, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); display: none; padding: 8px; width: 220px; grid-template-columns: repeat(5, 1fr); gap: 6px; z-index: 1000; justify-items: center; font-size: 20px; }
+        .tg-emoji-pop.open { display: grid; animation: bubblePop 0.15s ease-out; }
     </style>
 </head>
 <body>
@@ -53,7 +69,7 @@
         <span id="inAppTitle" class="in-app-title">Новое сообщение</span>
         <span id="inAppBody" class="in-app-body">Текст...</span>
     </div>
-<!-- LOGIN & REGISTRATION LAYOUT LAYER -->
+<!-- ОКНО АВТОРИЗАЦИИ И РЕГИСТРАЦИИ -->
 <div id="boxAuth" class="win active">
     <div style="text-align: center; margin-bottom: 15px;"><span style="font-weight: bold; font-size: 16px;">(МСБ55115) мессенджер v.001</span></div>
     <h3>🔑 Вход и Регистрация</h3>
@@ -65,7 +81,7 @@
     <button style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);" onclick="appRegister()">Зарегистрироваться</button>
 </div>
 
-<!-- DASHBOARD AND ISOLATED SEARCH DISPLAY WINDOW -->
+<!-- ГЛАВНЫЙ ЭКРАН ПОИСКА И СПИСКА НАЙДЕННЫХ -->
 <div id="boxMain" class="win">
     <div style="text-align: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span style="font-size: 13px; color: rgba(255,255,255,0.7);">(МСБ55115) мессенджер v.001</span></div>
     <h4 id="lblUser" style="color: rgba(255,255,255,0.8); font-size:14px; text-align:left; margin-bottom: 15px;">Вы: </h4>
@@ -75,7 +91,7 @@
         <div class="box" id="adminUsersList" style="height: 70px; background: rgba(0,0,0,0.3);"></div>
     </div>
     
-    <!-- EMBEDDED SLENDER SEARCH ELEMENT -->
+    <!-- СТРОКА ПОИСКА ПОЛЬЗОВАТЕЛЕЙ ПО ID -->
     <div style="position: relative; margin-bottom: 15px; display: flex; align-items: center;">
         <input type="text" id="searchIdInp" placeholder="Введите ID для поиска..." style="margin: 0; padding-right: 75px; width: 100%;">
         <button style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: #28a745; width: auto; padding: 6px 10px; height: 32px; margin: 0; font-size: 12px; border-radius: 8px;" onclick="actionFindAndAdd()">+ Найти</button>
@@ -84,33 +100,50 @@
     <h4 style="text-align: left; font-size: 14px; margin: 5px 0; color: rgba(255,255,255,0.6);">Найденные пользователи:</h4>
     <div class="box" id="areaUsers" style="flex: 1;">Введите ID сверху, чтобы найти человека...</div>
 </div>
-<!-- PRIVATE SEPARATE DIALOG ROOM CONTAINER -->
+<!-- ОТДЕЛЬНОЕ ОКНО ЧАТА С НОВОЙ КОМПАКТНОЙ СТРОКОЙ ВВОДА -->
 <div id="boxChatRoom" class="win">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
         <button style="width: auto; padding: 6px 12px; background: rgba(255,255,255,0.15); margin: 0; font-size: 13px; height: 32px;" onclick="backToMainSearch()">⬅ Назад</button>
         <h4 style="margin: 0; font-size: 15px;">💬 Чат: <span id="chatTargetLabel" style="background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:8px;">не выбран</span></h4>
-        <div style="width: 65px;"></div>
+        <div style="width: 65px;"></div> <!-- Отступ для выравнивания -->
     </div>
     
     <div class="box" id="areaMessages" style="flex: 1; margin-bottom: 10px;">Загрузка сообщений...</div>
     
-    <div class="emoji-bar">
-        <span class="emoji-btn" onclick="addEmoji('😀')">😀</span><span class="emoji-btn" onclick="addEmoji('😂')">😂</span><span class="emoji-btn" onclick="addEmoji('👍')">👍</span><span class="emoji-btn" onclick="addEmoji('❤️')">❤️</span>
-        <span class="emoji-btn" onclick="addEmoji('🔥')">🔥</span><span class="emoji-btn" onclick="addEmoji('🎉')">🎉</span><span class="emoji-btn" onclick="addEmoji('😮')">😮</span><span class="emoji-btn" onclick="addEmoji('😢')">😢</span>
+    <!-- СТРОКА ВВОДА С ЭЛЕМЕНТАМИ УПРАВЛЕНИЯ В ОДНУ ЛИНИЮ -->
+    <div style="position: relative; width: 100%; display: flex; align-items: center;">
+        
+        <!-- ВСПЛЫВАЮЩИЙ БЛОК ДЛЯ МГНОВЕННОГО ВЫБОРА СМАЙЛИКОВ -->
+        <div id="emojiPopTray" class="tg-emoji-pop">
+            <span class="tg-icon-btn" onclick="addEmoji('😀')">😀</span><span class="tg-icon-btn" onclick="addEmoji('😂')">😂</span><span class="tg-icon-btn" onclick="addEmoji('👍')">👍</span><span class="tg-icon-btn" onclick="addEmoji('❤️')">❤️</span>
+            <span class="tg-icon-btn" onclick="addEmoji('🔥')">🔥</span><span class="tg-icon-btn" onclick="addEmoji('🎉')">🎉</span><span class="tg-icon-btn" onclick="addEmoji('😮')">😮</span><span class="tg-icon-btn" onclick="addEmoji('😢')">😢</span>
+            <span class="tg-icon-btn" onclick="addEmoji('🚀')">🚀</span><span class="tg-icon-btn" onclick="addEmoji('👀')">👀</span>
+        </div>
+
+        <div class="tg-input-bar">
+            <!-- КНОПКА-СКРЕПКА ДЛЯ ДОБАВЛЕНИЯ ФАЙЛОВ -->
+            <label class="tg-icon-btn" id="fileClipBtn" style="margin:0;">📎
+                <input type="file" id="fileInp" style="display:none;" onchange="handleFileSelect(this)">
+            </label>
+            
+            <!-- ТЕКСТОВОЕ ПОЛЕ ЧАТА -->
+            <textarea id="textInp" class="tg-field" rows="1" placeholder="Cообщение..." onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
+            
+            <!-- СМАЙЛИК ДЛЯ ОТКРЫТИЯ ПАНЕЛИ -->
+            <div class="tg-icon-btn" onclick="toggleEmojiTray(event)">😀</div>
+        </div>
+
+        <!-- КРУГЛАЯ КНОПКА ОТПРАВКИ -->
+        <button class="tg-send-btn" onclick="actionSend()">🚀</button>
     </div>
-    
-    <label class="file-label" id="fileLabelBtn">📎 Прикрепить картинку или файл
-        <input type="file" id="fileInp" style="display:none;" onchange="handleFileSelect(this)">
-    </label>
-    <textarea id="textInp" placeholder="Наберите сообщение... (Enter для отправки)" onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
-    <button style="background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); margin:0;" onclick="actionSend()">Отправить 🚀</button>
 </div>
 
 <script>
     let myAccount = "", myID = "", chatWith = "", chatTimer = null;
-    let attachedFile = null; let totalMessagesCount = {};
+    let attachedFile = null; let totalMessagesCount = {}; let isFirstLoadForRoom = {};
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
 
+    // ИНИЦИАЛИЗАЦИЯ И СВЯЗЫВАНИЕ ONESIGNAL ПУШЕЙ
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
@@ -121,6 +154,17 @@
             registrationScope: "/"
         });
         if (myAccount) { OneSignal.login(myAccount); }
+    });
+
+    // Показ и скрытие шторки со смайликами
+    function toggleEmojiTray(event) {
+        event.stopPropagation();
+        document.getElementById("emojiPopTray").classList.toggle("open");
+    }
+    
+    // Закрытие смайликов при клике в любое свободное место
+    document.addEventListener("click", function() {
+        document.getElementById("emojiPopTray").classList.remove("open");
     });
 
     function triggerTopBanner(sender, text) {
@@ -138,8 +182,9 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             attachedFile = { name: file.name, type: file.type, data: e.target.result };
-            document.getElementById("fileLabelBtn").style.background = "#28a745";
-            document.getElementById("fileLabelBtn").innerText = "✅ Файл готов: " + file.name;
+            const clip = document.getElementById("fileClipBtn");
+            clip.style.background = "rgba(40, 167, 69, 0.25)";
+            clip.innerText = "✅";
         };
         reader.readAsDataURL(file);
     }
@@ -170,11 +215,8 @@
         fetch(URL_FB + "users/" + log + ".json").then(r => r.json()).then(user => {
             if (user && user.password === pas) {
                 myAccount = log; myID = user.id;
-                
-                // MULTI-SCREEN SWITCHING ROUTE WITH MICRO-DELAYS FOR SMOOTH SLIDES
                 document.getElementById("boxAuth").classList.remove("active");
                 setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50);
-                
                 document.getElementById("lblUser").innerText = "Вы: " + myAccount + " (ID: " + myID + ")";
                 window.OneSignalDeferred.push(function(OneSignal) { OneSignal.login(myAccount); if (OneSignal.Notifications) { OneSignal.Notifications.requestPermission(); } });
                 if (myAccount === "admin") { document.getElementById("adminPanel").style.display = "block"; loadAdminUsersList(); }
@@ -210,40 +252,36 @@
     
     function startPersonalChat(tLog) {
         chatWith = tLog; document.getElementById("chatTargetLabel").innerText = "@" + tLog;
-        
-        // SLIDES INTO PRIVATE CHAT VIEW FORWARD RIGHT
+        const area = document.getElementById("areaMessages"); area.innerHTML = "Загрузка сообщений...";
+        const room = [myAccount, chatWith].sort().join("_"); isFirstLoadForRoom[room] = true;
         document.getElementById("boxMain").classList.remove("active");
         setTimeout(() => { document.getElementById("boxChatRoom").classList.add("active"); }, 50);
-        
         if(chatTimer) clearInterval(chatTimer); loadMessages(); chatTimer = setInterval(loadMessages, 3000); 
     }
     function backToMainSearch() {
         chatWith = ""; if(chatTimer) clearInterval(chatTimer);
-        
-        // SLIDES OUT CHAT ROOM VIEW BACK TO MAIN DECK
         document.getElementById("boxChatRoom").classList.remove("active");
-        document.getElementById("areaMessages").innerHTML = "Загрузка сообщений...";
         setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50);
-        
         actionLoadMyContacts();
     }
+    
+    // УМНЫЙ АНТИФЛЭШ-ДВИЖОК С ЛОГИКОЙ ПОЯВЛЕНИЯ ВСПЛЫВАЮЩИХ ОКНО НАЭКРАНЕ
     function loadMessages() {
         if (!chatWith) return; const room = [myAccount, chatWith].sort().join("_");
         fetch(URL_FB + "messages/" + room + ".json").then(r => r.json()).then(data => {
-            const area = document.getElementById("areaMessages"); if (!data) { area.innerHTML = "Сообщений нет. Напишите первым!"; totalMessagesCount[room] = 0; return; }
-            const msgIds = Object.keys(data).sort(); const serverCount = msgIds.length;
-            if (totalMessagesCount[room] !== undefined && serverCount > totalMessagesCount[room]) {
-                const lastMsg = data[msgIds[msgIds.length - 1]]; if (lastMsg.sender !== myAccount) { triggerTopBanner(lastMsg.sender, lastMsg.text); }
-            }
-            totalMessagesCount[room] = serverCount; area.innerHTML = "";
+            const area = document.getElementById("areaMessages"); if (!data) { area.innerHTML = "Сообщений нет. Напишите первым!"; totalMessagesCount[room] = 0; isFirstLoadForRoom[room] = false; return; }
+            if (area.innerHTML === "Загрузка сообщений..." || area.innerHTML === "Сообщений нет. Напишите первым!") { area.innerHTML = ""; }
+            const msgIds = Object.keys(data).sort();
             msgIds.forEach(id => {
-                const m = data[id]; const div = document.createElement("div"); div.className = "msg " + (m.sender === myAccount ? "my" : "other");
+                const m = data[id]; if (!document.getElementById(id) && isFirstLoadForRoom[room] === false && m.sender !== myAccount) { triggerTopBanner(m.sender, m.text); }
+                if (document.getElementById(id)) return;
+                const div = document.createElement("div"); div.className = "msg " + (m.sender === myAccount ? "my" : "other"); div.id = id;
                 if (m.text) { div.innerHTML += `<span>${m.text}</span>`; }
                 if (m.file) { if (m.file.type?.startsWith("image/")) { div.innerHTML += `<img src="${m.file.data}">`; } else { div.innerHTML += `<a class="file-link" href="${m.file.data}" download="${m.file.name}">📂 ${m.file.name}</a>`; } }
                 if (m.time) { const d = new Date(m.time); div.innerHTML += `<span class="msg-time" style="font-size:10px; opacity:0.6; align-self:flex-end; margin-top:4px;">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`; }
-                area.appendChild(div);
+                area.appendChild(div); area.scrollTop = area.scrollHeight;
             });
-            area.scrollTop = area.scrollHeight;
+            totalMessagesCount[room] = msgIds.length; isFirstLoadForRoom[room] = false;
         });
     }
     function actionSend() {
@@ -256,7 +294,9 @@
                 headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" },
                 body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": `Новое от ${myAccount}` }, contents: { "en": text ? text : "Файл" } })
             }).catch(e => console.log(e));
-            document.getElementById("textInp").value = ""; attachedFile = null; document.getElementById("fileLabelBtn").innerText = "📎 Прикрепить картинку или файл"; document.getElementById("fileLabelBtn").style.background = "rgba(255,255,255,0.15)"; loadMessages();
+            document.getElementById("textInp").value = ""; attachedFile = null;
+            const clip = document.getElementById("fileClipBtn"); clip.style.background = "transparent"; clip.innerHTML = "📎<input type='file' id='fileInp' style='display:none;' onchange='handleFileSelect(this)'>";
+            loadMessages();
         });
     }
 </script>
