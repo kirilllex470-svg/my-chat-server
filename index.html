@@ -118,41 +118,66 @@
         reader.readAsDataURL(file);
     }
     function appRegister() {
-        const log = document.getElementById("loginInp").value.trim().toLowerCase(); const pas = document.getElementById("passInp").value; const customID = document.getElementById("idInp").value.trim(); const status = document.getElementById("authStatus");
+        const log = document.getElementById("loginInp").value.trim().toLowerCase();
+        const pas = document.getElementById("passInp").value;
+        const customID = document.getElementById("idInp").value.trim();
+        const status = document.getElementById("authStatus");
         if (!log || !pas || !customID) { status.innerText = "Заполните все поля!"; return; }
         status.innerText = "Регистрация...";
-        fetch(URL_FB + "users/" + log + ".json").then(r => r.json()).then(exists => {
+        fetch(URL_FB + "users/" + log + ".json")
+        .then(r => r.json())
+        .then(exists => {
             if (exists) { status.innerText = "Логин занят!"; return; }
             return fetch(URL_FB + "users/" + log + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pas, id: customID, lastSeen: Date.now() }) });
-        }).then(res => { if(res) { status.style.color = "#28a745"; status.innerText = "Успешно! Теперь нажмите 'Войти'"; } }).catch(() => { status.innerText = "Ошибка сети при регистрации!"; });
+        })
+        .then(res => { if(res) { status.style.color = "#28a745"; status.innerText = "Успешно! Теперь нажмите 'Войти'"; } })
+        .catch(() => { status.innerText = "Ошибка сети при регистрации!"; });
     }
     function appLogin() {
-        const log = document.getElementById("loginInp").value.trim().toLowerCase(); const pas = document.getElementById("passInp").value; const status = document.getElementById("authStatus"); if (!log || !pas) { status.innerText = "Введите логин и пароль!"; return; }
+        const log = document.getElementById("loginInp").value.trim().toLowerCase();
+        const pas = document.getElementById("passInp").value;
+        const status = document.getElementById("authStatus");
+        if (!log || !pas) { status.innerText = "Введите логин и пароль!"; return; }
         status.style.color = "#ff6b6b"; status.innerText = "Проверка...";
         fetch("OneSignalSDKWorker.js").then(res => { if (res.status === 404) { status.innerText = "⚠️ Ошибка: Нет OneSignalSDKWorker.js на сервере!"; } }).catch(() => {});
-        fetch(URL_FB + "users/" + log + ".json").then(r => r.json()).then(user => {
+        fetch(URL_FB + "users/" + log + ".json")
+        .then(r => r.json())
+        .then(user => {
             if (user && String(user.password) === String(pas)) {
-                myAccount = log; myID = user.id; document.getElementById("boxAuth").classList.remove("active");
+                myAccount = log; myID = user.id;
+                document.getElementById("boxAuth").classList.remove("active");
                 setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50);
                 document.getElementById("lblUser").innerText = "Вы: " + myAccount + " (ID: " + myID + ")";
                 window.OneSignalDeferred.push(function(OneSignal) { OneSignal.login(myAccount); if (OneSignal.Notifications) { OneSignal.Notifications.requestPermission(); } });
                 if (myAccount === "admin") { document.getElementById("adminPanel").style.display = "block"; loadAdminUsersList(); }
                 setInterval(() => { fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(Date.now()) }); }, 10000);
-                actionLoadMyContacts(); startGlobalMessageMonitoring();
+                actionLoadMyContacts();
+                startGlobalMessageMonitoring();
             } else { status.innerText = "Неверный логин или пароль!"; }
         }).catch(() => { status.innerText = "Ошибка сервера (нет связи)!"; });
     }
     function startGlobalMessageMonitoring() {
         if (globalMonitorTimer) clearInterval(globalMonitorTimer);
-        fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => { if (allRooms) { Object.keys(allRooms).forEach(room => { if (!room.includes(myAccount)) return; Object.keys(allRooms[room]).forEach(msgId => { globalKnownMessages[msgId] = true; }); }); } });
+        fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => {
+            if (allRooms) {
+                Object.keys(allRooms).forEach(room => {
+                    if (!room.includes(myAccount)) return;
+                    Object.keys(allRooms[room]).forEach(msgId => { globalKnownMessages[msgId] = true; });
+                });
+            }
+        });
         globalMonitorTimer = setInterval(() => {
             fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => {
                 if (!allRooms) return;
                 Object.keys(allRooms).forEach(room => {
                     if (!room.includes(myAccount)) return;
                     Object.keys(allRooms[room]).forEach(msgId => {
-                        const m = allRooms[room][msgId]; if (!m) return;
-                        if (!globalKnownMessages[msgId] && m.sender !== myAccount) { const senderPartner = room.replace(myAccount, "").replace("_", ""); if (chatWith !== senderPartner) { triggerTopBanner(m.sender, m.text); } }
+                        const m = allRooms[room][msgId];
+                        if (!m) return;
+                        if (!globalKnownMessages[msgId] && m.sender !== myAccount) {
+                            const senderPartner = room.replace(myAccount, "").replace("_", "");
+                            if (chatWith !== senderPartner) { triggerTopBanner(m.sender, m.text); }
+                        }
                         globalKnownMessages[msgId] = true;
                     });
                 });
@@ -169,35 +194,61 @@
     function actionFindAndAdd() {
         const searchId = document.getElementById("searchIdInp").value.trim(); if (!searchId) return;
         fetch(URL_FB + "users.json").then(r => r.json()).then(allUsers => {
-            let foundLog = null; if (allUsers) { Object.keys(allUsers).forEach(log => { if (allUsers[log] && String(allUsers[log].id).trim() === String(searchId).trim()) { foundLog = log; } }); }
+            let foundLog = null;
+            if (allUsers) { Object.keys(allUsers).forEach(log => { if (allUsers[log] && String(allUsers[log].id).trim() === String(searchId).trim()) { foundLog = log; } }); }
             if (foundLog) {
                 if (foundLog === myAccount) { alert("Нельзя добавить самого себя!"); return; }
                 fetch(URL_FB + "contacts/" + myAccount + "/" + foundLog + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: searchId }) }).then(() => { document.getElementById("searchIdInp").value = ""; actionLoadMyContacts(); });
-            } else { alert("Пользователь с таким ID не зарегистрирован!"); }
+            } else { alert("Пользователь с таким ID не зарегистрирован в системе!"); }
         });
     }
     function actionLoadMyContacts() {
-        fetch(URL_FB + "contacts/" + myAccount + ".json").then(r => r.json()).then(contactsData => {
-            const area = document.getElementById("areaUsers"); area.innerHTML = contactsData ? "" : "Список пуст. Найдите кого-нибудь по ID выше!"; if (!contactsData) return;
-            fetch(URL_FB + "users.json").then(r => r.json()).then(globalUsers => {
+        fetch(URL_FB + "contacts/" + myAccount + ".json")
+        .then(r => r.json())
+        .then(contactsData => {
+            const area = document.getElementById("areaUsers"); 
+            area.innerHTML = contactsData ? "" : "Список пуст. Найдите кого-нибудь по ID выше!"; 
+            if (!contactsData) return;
+            
+            fetch(URL_FB + "users.json")
+            .then(r => r.json())
+            .then(globalUsers => {
                 Object.keys(contactsData).forEach(log => {
                     if (!contactsData[log]) return;
+                    
                     const container = document.createElement("div"); container.className = "swipe-container";
                     const row = document.createElement("div"); row.className = "row";
+                    
                     let presenceStatus = "<span style='color:rgba(255,255,255,0.4); font-size:12px;'>офлайн</span>";
                     if (globalUsers && globalUsers[log] && globalUsers[log].lastSeen) {
                         let timeDiff = Date.now() - globalUsers[log].lastSeen;
-                        if (timeDiff < 25000) { presenceStatus = "<span style='color:#28a745; font-size:12px; font-weight:bold;'>• в сети</span>"; } 
-                        else { let lastDate = new Date(globalUsers[log].lastSeen); presenceStatus = `<span style='color:rgba(255,255,255,0.4); font-size:11px;'>был(а) ${String(lastDate.getHours()).padStart(2,'0')}:${String(lastDate.getMinutes()).padStart(2,'0')}</span>`; }
+                        if (timeDiff < 25000) {
+                            presenceStatus = "<span style='color:#28a745; font-size:12px; font-weight:bold;'>• в сети</span>";
+                        } else {
+                            let lastDate = new Date(globalUsers[log].lastSeen);
+                            presenceStatus = `<span style='color:rgba(255,255,255,0.4); font-size:11px;'>был(а) ${String(lastDate.getHours()).padStart(2,'0')}:${String(lastDate.getMinutes()).padStart(2,'0')}</span>`;
+                        }
                     }
-                    row.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px;"><span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>${presenceStatus}</div>`;
+
+                    row.innerHTML = `
+                        <div style="display:flex; flex-direction:column; gap:2px;">
+                            <span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>
+                            ${presenceStatus}
+                        </div>`;
+                    
                     const delBtn = document.createElement("div"); delBtn.className = "swipe-btn"; delBtn.innerText = "Удалить";
                     delBtn.onclick = (e) => { e.stopPropagation(); actionDelContact(log); };
+                    
                     let startX = 0, startY = 0, currentX = 0, currentY = 0, isSwiping = false, hasMoved = false;
                     row.addEventListener("touchstart", (e) => { startX = e.touches.clientX; startY = e.touches.clientY; isSwiping = true; hasMoved = false; row.style.transition = "none"; }, { passive: true });
-                    row.addEventListener("touchmove", (e) => { if (!isSwiping) return; currentX = e.touches.clientX; currentY = e.touches.clientY; let diffX = currentX - startX; let diffY = currentY - startY; if (Math.abs(diffY) > Math.abs(diffX)) { isSwiping = false; row.style.transform = "translateX(0)"; return; } if (diffX < -5) { hasMoved = true; if (diffX > -80) row.style.transform = `translateX(${diffX}px)`; } }, { passive: true });
+                    row.addEventListener("touchmove", (e) => { 
+                        if (!isSwiping) return; currentX = e.touches.clientX; currentY = e.touches.clientY; let diffX = currentX - startX; let diffY = currentY - startY;
+                        if (Math.abs(diffY) > Math.abs(diffX)) { isSwiping = false; row.style.transform = "translateX(0)"; return; }
+                        if (diffX < -5) { hasMoved = true; if (diffX > -80) row.style.transform = `translateX(${diffX}px)`; } 
+                    }, { passive: true });
                     row.addEventListener("touchend", () => { isSwiping = false; row.style.transition = "transform 0.2s ease"; let diffX = currentX - startX; if (hasMoved && diffX <= -40) { row.style.transform = "translateX(-80px)"; } else { row.style.transform = "translateX(0)"; } });
                     row.onclick = () => { if (row.style.transform === "translateX(-80px)") { row.style.transform = "translateX(0)"; } else if (!hasMoved) { startPersonalChat(log); } };
+                    
                     container.appendChild(delBtn); container.appendChild(row); area.appendChild(container);
                 });
             });
@@ -206,8 +257,44 @@
     function actionDelContact(tLog) { if (confirm("Удалить из найденных?")) { fetch(URL_FB + "contacts/" + myAccount + "/" + tLog + ".json", { method: "DELETE" }).then(() => { actionLoadMyContacts(); }); } }
     function startPersonalChat(tLog) { chatWith = tLog; document.getElementById("chatTargetLabel").innerText = "@" + tLog; const area = document.getElementById("areaMessages"); area.innerHTML = "Загрузка сообщений..."; const room = [myAccount, chatWith].sort().join("_"); isFirstLoadForRoom[room] = true; document.getElementById("boxMain").classList.remove("active"); setTimeout(() => { document.getElementById("boxChatRoom").classList.add("active"); }, 50); if(chatTimer) clearInterval(chatTimer); loadMessages(); chatTimer = setInterval(loadMessages, 3000); }
     function backToMainSearch() { if(chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); } chatWith = ""; if(chatTimer) clearInterval(chatTimer); document.getElementById("boxChatRoom").classList.remove("active"); setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50); actionLoadMyContacts(); }
+    
     function loadMessages() {
         if (!chatWith) return; const room = [myAccount, chatWith].sort().join("_");
-        fetch(URL_FB + "typing/" + myAccount + "/" + chatWith + ".json").then(r => r.json()).then(isTyping => { const label = document.getElementById("chatTargetLabel"); if (isTyping === true) { label.innerText = "@" + chatWith + " (печатает...)"; } else { label.innerText = "@" + chatWith; } });
-        document.getElementById("textInp").oninput = function() { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "true" }); clearTimeout(window.typingResetTimeout); window.typingResetTimeout = setTimeout(() => { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); }, 2000); };
+        fetch(URL_FB + "typing/" + myAccount + "/" + chatWith + ".json").then(r => r.json()).then(isTyping => {
+            const label = document.getElementById("chatTargetLabel");
+            if (isTyping === true) { label.innerText = "@" + chatWith + " (печатает...)"; } else { label.innerText = "@" + chatWith; }
+        });
         
+        document.getElementById("textInp").oninput = function() {
+            fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "true" });
+            clearTimeout(window.typingResetTimeout);
+            window.typingResetTimeout = setTimeout(() => { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); }, 2000);
+        };
+
+        fetch(URL_FB + "messages/" + room + ".json").then(r => r.json()).then(data => {
+            const area = document.getElementById("areaMessages"); if (!data) { area.innerHTML = "Сообщений нет. Напишите первым!"; totalMessagesCount[room] = 0; isFirstLoadForRoom[room] = false; return; }
+            if (area.innerHTML === "Загрузка сообщений..." || area.innerHTML === "Сообщений нет. Напишите первым!") { area.innerHTML = ""; }
+            const msgIds = Object.keys(data).sort();
+            msgIds.forEach(id => {
+                const m = data[id]; if (!document.getElementById(id) && isFirstLoadForRoom[room] === false && m.sender !== myAccount) { triggerTopBanner(m.sender, m.text); }
+                if (document.getElementById(id)) return;
+                const div = document.createElement("div"); div.className = "msg " + (m.sender === myAccount ? "my" : "other"); div.id = id;
+                if (m.text) { div.innerHTML += `<span>${m.text}</span>`; }
+                if (m.file) { if (m.file.type?.startsWith("image/")) { div.innerHTML += `<img src="${m.file.data}">`; } else { div.innerHTML += `<a class="file-link" href="${m.file.data}" download="${m.file.name}">📂 ${m.file.name}</a>`; } }
+                if (m.time) { const d = new Date(m.time); div.innerHTML += `<span class="msg-time" style="font-size:10px; opacity:0.6; align-self:flex-end; margin-top:4px;">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`; }
+                area.appendChild(div); area.scrollTop = area.scrollHeight;
+            });
+            totalMessagesCount[room] = msgIds.length; isFirstLoadForRoom[room] = false;
+        });
+    }
+    function actionSend() {
+        const text = document.getElementById("textInp").value.trim(); if (!text && !attachedFile) return; if (!chatWith) return;
+        const room = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now(); const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; if (attachedFile) bodyMsg.file = attachedFile;
+        fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => {
+            fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": `Новое от ${myAccount}` }, contents: { "en": text ? text : "Файл" } }) }).catch(() => {});
+            document.getElementById("textInp").value = ""; attachedFile = null; const clip = document.getElementById("fileClipBtn"); clip.style.background = "transparent"; clip.innerHTML = "📎<input type='file' id='fileInp' style='display:none;' onchange='handleFileSelect(this)'>"; loadMessages();
+        });
+    }
+</script>
+</body>
+</html>
