@@ -77,7 +77,7 @@
     <label class="file-label" id="fileLabelBtn">📎 Прикрепить картинку или файл
         <input type="file" id="fileInp" style="display:none;" onchange="handleFileSelect(this)">
     </label>
-    <textarea id="textInp" placeholder="Наберите текст сообщения... (Enter для отправки)" onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
+    <textarea id="textInp" placeholder="Наберите text сообщения... (Enter для отправки)" onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
     <button style="background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); margin:0;" onclick="actionSend()">Отправить</button>
 </div>
 <script>
@@ -107,7 +107,7 @@
     function addEmoji(emoji) { const input = document.getElementById("textInp"); input.value += emoji; input.focus(); }
 
     function handleFileSelect(input) {
-        const file = input.files[0]; if (!file) return;
+        const file = input.files; if (!file) return;
         if (file.size > 2 * 1024 * 1024) { alert("Файл слишком большой! Максимум 2 МБ."); input.value = ""; return; }
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -132,6 +132,20 @@
         const log = document.getElementById("loginInp").value.trim().toLowerCase();
         const pas = document.getElementById("passInp").value;
         const status = document.getElementById("authStatus");
+        if (!log || !pas) { status.innerText = "Введите логин и пароль!"; return; }
+        status.style.color = "#ff6b6b";
+
+        fetch("OneSignalSDKWorker.js")
+        .then(res => {
+            if (res.status === 404) {
+                status.innerText = "⚠️ Ошибка: Файл OneSignalSDKWorker.js не найден на Render! Пуши не придут.";
+                return;
+            }
+            proceedWithLogin(log, pas, status);
+        })
+        .catch(() => { proceedWithLogin(log, pas, status); });
+    }
+    function proceedWithLogin(log, pas, status) {
         fetch(URL_FB + "users/" + log + ".json").then(r => r.json()).then(user => {
             if (user && user.password === pas) {
                 myAccount = log; myID = user.id;
