@@ -24,9 +24,11 @@
         .msg.my { background: #2481cc; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
         .msg.other { background: rgba(255,255,255,0.15); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg img { max-width: 100%; border-radius: 12px; margin-top: 4px; max-height: 200px; object-fit: cover; }
-        .swipe-container { position: relative; width: 100%; overflow: hidden; border-radius: 14px; background: #dc3545; height: 50px; margin-bottom: 4px; flex-shrink: 0; }
-        .row { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; background: rgba(255,255,255,0.04); border-radius: 14px; font-size: 15px; cursor: pointer; box-sizing: border-box; transition: transform 0.2s ease; will-change: transform; z-index: 2; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
-        .swipe-btn { position: absolute; right: 0; top: 0; height: 100%; width: 70px; background: #dc3545; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; z-index: 1; cursor: pointer; border-radius: 0 14px 14px 0; }
+        
+        /* СТИЛИ СМАХИВАНИЯ С АККУРАТНОЙ ТЕКСТОВОЙ КНОПКОЙ */
+        .swipe-container { position: relative; width: 100%; overflow: hidden; border-radius: 14px; background: rgba(255, 255, 255, 0.03); height: 50px; margin-bottom: 4px; flex-shrink: 0; }
+        .row { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; background: rgba(255,255,255,0.05); border-radius: 14px; font-size: 15px; cursor: pointer; box-sizing: border-box; transition: transform 0.2s ease; will-change: transform; z-index: 2; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+        .swipe-btn { position: absolute; right: 0; top: 0; height: 100%; width: 80px; background: transparent; color: #ff4d4d; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; z-index: 1; cursor: pointer; border-radius: 0 14px 14px 0; letter-spacing: 0.5px; }
         .admin-section { background: rgba(220, 53, 69, 0.12); border: 1px solid rgba(220, 53, 69, 0.25); border-radius: 16px; padding: 10px; margin-bottom: 10px; display: none; }
         .in-app-alert { position: fixed; top: -80px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px; background: rgba(25, 25, 40, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px 16px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 9999; display: flex; flex-direction: column; gap: 4px; transition: top 0.3s ease; }
         .in-app-alert.show { top: 12px; }
@@ -111,7 +113,7 @@
     function closeInAppAlert() { document.getElementById("inAppNotification").classList.remove("show"); }
     function addEmoji(emoji) { const input = document.getElementById("textInp"); input.value += emoji; input.focus(); }
     function handleFileSelect(input) {
-        const file = input.files[0]; if (!file) return;
+        const file = input.files; if (!file) return;
         if (file.size > 2 * 1024 * 1024) { alert("Файл слишком большой! Максимум 2 МБ."); input.value = ""; return; }
         const reader = new FileReader();
         reader.onload = function(e) { attachedFile = { name: file.name, type: file.type, data: e.target.result }; const clip = document.getElementById("fileClipBtn"); clip.style.background = "rgba(40, 167, 69, 0.3)"; clip.innerText = "✅"; };
@@ -165,10 +167,10 @@
         const searchId = document.getElementById("searchIdInp").value.trim(); if (!searchId) return;
         fetch(URL_FB + "users.json").then(r => r.json()).then(all => {
             let fLog = null; if (all) { Object.keys(all).forEach(l => { if (all[l] && String(all[l].id) === String(searchId)) fLog = l; }); }
-            if (fLog) { if (fLog === myAccount) { alert("Нельзя добавить себя!"); return; } fetch(URL_FB + "contacts/" + myAccount + "/" + fLog + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: searchId }) }).then(() => { document.getElementById("searchIdInp").value = ""; actionLoadMyContacts(); }); } else { alert("ID не найден!"); }
+            if (fLog) { if (fLog === myAccount) { alert("Нельзя добавить себя!"); return; } fetch(URL_FB + "contacts/" + myAccount + "/" + fLog + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: searchId }) }).then(() => { document.getElementById("searchIdInp").value = ""; actionLoadMyContacts(); }); } else { alert("Пользователь с таким ID не найден!"); }
         });
     }
-      function actionLoadMyContacts() {
+    function actionLoadMyContacts() {
         fetch(URL_FB + "contacts/" + myAccount + ".json").then(r => r.json()).then(data => {
             const area = document.getElementById("areaUsers"); area.innerHTML = data ? "" : "Список пуст. Найдите кого-нибудь по ID выше!"; if (!data) return;
             Object.keys(data).forEach(log => {
@@ -177,62 +179,15 @@
                 row.innerHTML = `<span>👤 <b>@${log}</b> (ID: ${data[log].id})</span>`;
                 const delBtn = document.createElement("div"); delBtn.className = "swipe-btn"; delBtn.innerText = "Удалить";
                 delBtn.onclick = (e) => { e.stopPropagation(); actionDelContact(log); };
-                
-                // HIGH PRECISION TOUCH RADAR VARIABLES
                 let startX = 0, startY = 0, currentX = 0, currentY = 0, isSwiping = false, hasMoved = false;
-                
-                row.addEventListener("touchstart", (e) => { 
-                    startX = e.touches[0].clientX; 
-                    startY = e.touches[0].clientY; 
-                    isSwiping = true; 
-                    hasMoved = false;
-                    row.style.transition = "none"; 
-                }, { passive: true });
-                
+                row.addEventListener("touchstart", (e) => { startX = e.touches.clientX; startY = e.touches.clientY; isSwiping = true; hasMoved = false; row.style.transition = "none"; }, { passive: true });
                 row.addEventListener("touchmove", (e) => { 
-                    if (!isSwiping) return; 
-                    currentX = e.touches[0].clientX; 
-                    currentY = e.touches[0].clientY; 
-                    let diffX = currentX - startX; 
-                    let diffY = currentY - startY;
-                    
-                    // If the user scrolls vertically up/down, kill the side swipe logic
-                    if (Math.abs(diffY) > Math.abs(diffX)) {
-                        isSwiping = false;
-                        row.style.transform = "translateX(0)";
-                        return;
-                    }
-                    
-                    // Detect if the finger actually moved left horizontally
-                    if (diffX < -5) { 
-                        hasMoved = true;
-                        if (diffX > -70) row.style.transform = `translateX(${diffX}px)`; 
-                    } 
+                    if (!isSwiping) return; currentX = e.touches.clientX; currentY = e.touches.clientY; let diffX = currentX - startX; let diffY = currentY - startY;
+                    if (Math.abs(diffY) > Math.abs(diffX)) { isSwiping = false; row.style.transform = "translateX(0)"; return; }
+                    if (diffX < -5) { hasMoved = true; if (diffX > -80) row.style.transform = `translateX(${diffX}px)`; } 
                 }, { passive: true });
-                
-                row.addEventListener("touchend", () => { 
-                    isSwiping = false; 
-                    row.style.transition = "transform 0.2s ease"; 
-                    let diffX = currentX - startX; 
-                    
-                    if (hasMoved && diffX <= -35) { 
-                        row.style.transform = "translateX(-70px)"; 
-                    } else { 
-                        row.style.transform = "translateX(0)"; 
-                    } 
-                });
-                
-                // INSTANT MOBILE CLICK HANDLER
-                row.onclick = () => { 
-                    // If the swipe delete menu is currently revealed, shut it clean first
-                    if (row.style.transform === "translateX(-70px)") { 
-                        row.style.transform = "translateX(0)"; 
-                    } else if (!hasMoved) { 
-                        // If the finger did not drag left, open the chat box instantly!
-                        startPersonalChat(log); 
-                    }
-                };
-                
+                row.addEventListener("touchend", () => { isSwiping = false; row.style.transition = "transform 0.2s ease"; let diffX = currentX - startX; if (hasMoved && diffX <= -40) { row.style.transform = "translateX(-80px)"; } else { row.style.transform = "translateX(0)"; } });
+                row.onclick = () => { if (row.style.transform === "translateX(-80px)") { row.style.transform = "translateX(0)"; } else if (!hasMoved) { startPersonalChat(log); } };
                 container.appendChild(delBtn); container.appendChild(row); area.appendChild(container);
             });
         });
