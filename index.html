@@ -106,31 +106,18 @@
     let myAccount = "", myID = "", chatWith = "", chatTimer = null;
     let attachedFile = null; 
 
-    // НАСТРОЙКА УВЕДОМЛЕНИЙ ONESIGNAL (СПЕЦИАЛЬНЫЙ РЕЖИМ ДЛЯ GITHUB PAGES)
+    // НАСТРОЙКА УВЕДОМЛЕНИЙ ONESIGNAL ДЛЯ RENDER
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
             appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733",
             autoRegister: true,
-            // Включаем встроенный колокольчик OneSignal, чтобы пользователь мог нажать на него вручную
             notifyButton: { 
-                enable: true,
-                position: 'bottom-right',
-                size: 'medium'
-            },
-            // Разрешаем OneSignal открывать отдельное окно для обхода блокировок браузера
-            httpPermissionRequest: { enable: true },
-            workerPath: "OneSignalSDKWorker.js",
-            registrationScope: "./"
-        });
-        
-        // Жесткая привязка при входе в чат
-        if (myAccount) {
-            OneSignal.login(myAccount);
-            if (OneSignal.Notifications) {
-                OneSignal.Notifications.requestPermission();
+                enable: true, 
+                position: 'bottom-right' 
             }
-        }
+        });
+        if (myAccount) { OneSignal.login(myAccount); }
     });
 
 
