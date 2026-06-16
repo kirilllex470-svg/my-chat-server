@@ -86,12 +86,62 @@
             <span style="font-size: 13px; font-weight: bold; color: rgba(255,255,255,0.5);">(МСБ55115) МЕССЕНДЖЕР</span>
             <div class="logout-btn-header" onclick="appLogout()">Выйти 🚪</div>
         </div>
+        <h4 id="lblUser" style="color: #4fc3f7; font-size:14px; text-align:left; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 10px;">Вы: ...</h4>
+        <div id="adminPanel" class="admin-section">
+            <h4 style="font-size: 13px; color: #ff8585; text-align: left; margin-bottom: 6px;">🛠️ Управление (Админ)</h4>
+            <div class="box" id="adminUsersList" style="height: 80px; background: rgba(0,0,0,0.3);"></div>
+        </div>
+        <div style="position: relative; margin-bottom: 15px; display: flex; align-items: center;">
+            <input type="text" id="searchIdInp" placeholder="Поиск контактов по ID..." style="margin: 0; padding-right: 85px; width: 100%; height: 46px;">
+            <button style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: #28a745; width: auto; padding: 0 14px; height: 34px; margin: 0; font-size: 13px; border-radius: 10px;" onclick="actionFindAndAdd()">Найти</button>
+        </div>
+        <h4 style="text-align: left; font-size: 13px; margin: 5px 4px; color: rgba(255,255,255,0.4); text-transform: uppercase;">Мои Диалоги:</h4>
+        <div class="box" id="areaUsers" style="flex: 1;">Загрузка контактов...</div>
+    </div>
+
+    <div id="boxChatRoom" class="win" style="padding: 12px 14px 16px 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px; height: 40px; flex-shrink: 0;">
+            <div style="font-size: 16px; font-weight: bold; color: #2481cc; cursor: pointer; padding: 4px 8px 4px 0;" onclick="backToMainSearch()">⬅ Назад</div>
+            <h4 style="margin: 0; font-size: 16px; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span id="chatTargetLabel">@чат</span></h4>
+            <div class="logout-btn-header" onclick="appLogout()">Выйти 🚪</div>
+        </div>
+        <div class="box" id="areaMessages" style="flex: 1; margin-bottom: 10px; background: transparent; border: none; padding: 4px 0;">Загрузка истории...</div>
+        <div style="position: relative; width: 100%; display: flex; align-items: center; flex-shrink: 0; margin-top: auto; gap: 4px; box-sizing: border-box;">
+            <div id="emojiPopTray" class="tg-emoji-pop">
+                <span class="tg-icon-btn" onclick="addEmoji('😀')">😀</span><span class="tg-icon-btn" onclick="addEmoji('😂')">😂</span><span class="tg-icon-btn" onclick="addEmoji('👍')">👍</span><span class="tg-icon-btn" onclick="addEmoji('❤️')">❤️</span>
+                <span class="tg-icon-btn" onclick="addEmoji('🔥')">🔥</span><span class="tg-icon-btn" onclick="addEmoji('🎉')">🎉</span><span class="tg-icon-btn" onclick="addEmoji('😮')">😮</span><span class="tg-icon-btn" onclick="addEmoji('😢')">😢</span>
+                <span class="tg-icon-btn" onclick="addEmoji('🚀')">🚀</span><span class="tg-icon-btn" onclick="addEmoji('👀')">👀</span>
+            </div>
+            <div class="tg-input-bar">
+                <label class="tg-icon-btn" id="fileClipBtn" style="margin:0; width: 28px; height: 28px; font-size: 16px; user-select:none; -webkit-user-select:none;">📎
+                    <input type="file" id="fileInp" style="display:none;" onchange="handleFileSelect(this)">
+                </label>
+                <textarea id="textInp" class="tg-field" rows="1" placeholder="Cообщение..." onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
+                <div class="tg-icon-btn" style="width: 28px; height: 28px; font-size: 16px;" onclick="toggleEmojiTray(event)">😀</div>
+            </div>
+            <button id="voiceBtn" class="tg-send-btn" style="background: #28a745; margin-left: 0; width: 36px; height: 36px; font-size: 15px;" onclick="toggleVoiceRecord()">🎙️</button>
+            <button class="tg-send-btn" style="margin-left: 0; width: 36px; height: 36px; font-size: 15px;" onclick="actionSend()">🚀</button>
+        </div>
+    </div>
+
+    <div id="msgContextMenu" class="context-menu">
+        <div class="context-item" onclick="actionForwardTrigger()">🔄 Переслать</div>
+        <div id="contextDelBtn" class="context-item del" onclick="actionDeleteTrigger()">🗑️ Удалить</div>
+    </div>
+    <div id="forwardModal" class="modal-overlay" onclick="closeForwardModal()">
+        <div class="modal-body" onclick="event.stopPropagation()">
+            <h4 style="margin: 0; text-align: left; color: #4fc3f7;">Кому переслать?</h4>
+            <div id="forwardContactsArea" class="box" style="flex: 1; max-height: 250px;">Загрузка списка...</div>
+            <button style="background: rgba(255,255,255,0.08); margin: 0; padding: 10px;" onclick="closeForwardModal()">Отмена</button>
+        </div>
+    </div>
+
 <script>
     let myAccount = "", myID = "", chatWith = "", chatTimer = null, globalMonitorTimer = null, heartbeatTimer = null;
     let attachedFile = null; let totalMessagesCount = {}; let isFirstLoadForRoom = {}; let globalKnownMessages = {};
     let mediaRecorder = null, audioChunks = [], isRecordingVoice = false;
     let selectedMsgId = null, selectedMsgData = null;
-    const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
+    const URL_FB = "https://onrender.com"; 
     const msgSound = new Audio("https://mixkit.co");
     
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -99,13 +149,7 @@
         await OneSignal.init({ appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733", autoRegister: true, notifyButton: { enable: false }, workerPath: "OneSignalSDKWorker.js", registrationScope: "/" });
         if (myAccount) { OneSignal.login(myAccount); }
     });
-
     function toggleEmojiTray(event) { event.stopPropagation(); document.getElementById("emojiPopTray").classList.toggle("open"); }
-    document.addEventListener("click", function() { 
-        const menu = document.getElementById("msgContextMenu");
-        if (menu) menu.style.display = "none";
-        document.getElementById("emojiPopTray").classList.remove("open"); 
-    });
     
     function triggerTopBanner(sender, text) { 
         const b = document.getElementById("inAppNotification"); 
@@ -121,7 +165,7 @@
     
     function handleFileSelect(input) {
         const files = input.files; if (!files || files.length === 0) return;
-        const file = files[0];
+        const file = files[0]; // ИСПРАВЛЕНО: берём первый файл из коллекции
         if (file.size > 2 * 1024 * 1024) { alert("Файл слишком большой! Максимум 2 МБ."); input.value = ""; return; }
         const reader = new FileReader();
         reader.onload = function(e) { attachedFile = { name: file.name, type: file.type, data: e.target.result }; const clip = document.getElementById("fileClipBtn"); clip.style.background = "rgba(40, 167, 69, 0.3)"; clip.innerText = "✅"; };
@@ -147,6 +191,13 @@
     }
     
     function stopVoiceRecord() { if (mediaRecorder && isRecordingVoice) { mediaRecorder.stop(); isRecordingVoice = false; const btn = document.getElementById("voiceBtn"); btn.style.background = "#28a745"; btn.innerText = "🎙️"; } }
+    
+    document.addEventListener("click", function() { 
+        const menu = document.getElementById("msgContextMenu");
+        if (menu) menu.style.display = "none";
+        document.getElementById("emojiPopTray").classList.remove("open"); 
+    });
+
     function appRegister() {
         const log = document.getElementById("loginInp").value.trim().toLowerCase();
         const pas = document.getElementById("passInp").value;
@@ -159,7 +210,6 @@
             return fetch(URL_FB + "users/" + log + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pas, id: customID, lastSeen: Date.now() }) });
         }).then(res => { if(res) { status.style.color = "#28a745"; status.innerText = "Успешно! Теперь нажмите 'Войти'"; } }).catch(() => { status.innerText = "Ошибка сети при регистрации!"; });
     }
-    
     function appLogin() {
         const log = document.getElementById("loginInp").value.trim().toLowerCase();
         const pas = document.getElementById("passInp").value;
@@ -337,6 +387,7 @@
             fetch(URL_FB + "contacts/" + myAccount + "/" + tLog + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify("") }).then(() => { actionLoadMyContacts(); });
         }
     }
+
     function startPersonalChat(tLog) { chatWith = tLog; document.getElementById("chatTargetLabel").innerText = "@" + tLog; const area = document.getElementById("areaMessages"); area.innerHTML = "Загрузка сообщений..."; const room = [myAccount, chatWith].sort().join("_"); isFirstLoadForRoom[room] = true; document.getElementById("boxMain").classList.remove("active"); setTimeout(() => { document.getElementById("boxChatRoom").classList.add("active"); }, 50); if(chatTimer) clearInterval(chatTimer); loadMessages(); chatTimer = setInterval(loadMessages, 3000); }
     function backToMainSearch() { if(chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); } chatWith = ""; if(chatTimer) clearInterval(chatTimer); document.getElementById("boxChatRoom").classList.remove("active"); setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50); actionLoadMyContacts(); }
 
@@ -370,10 +421,4 @@
         const text = document.getElementById("textInp").value.trim(); if (!text && !attachedFile) return; if (!chatWith) return;
         const room = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now(); const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; if (attachedFile) bodyMsg.file = attachedFile;
         fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => {
-            fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": `Новое от ${myAccount}` }, contents: { "en": text ? text : (attachedFile && attachedFile.voice ? "Голосовое сообщение" : "Файл") } }) }).catch(() => {});
-            document.getElementById("textInp").value = ""; attachedFile = null; const clip = document.getElementById("fileClipBtn"); clip.style.background = "transparent"; clip.innerHTML = "📎<input type='file' id='fileInp' style='display:none;' onchange='handleFileSelect(this)'>"; loadMessages();
-        });
-    }
-</script>
-</body>
-</html>
+fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": Новое от ${myAccount}}, contents: { "en": text ? text : (attachedFile && attachedFile.voice ? "Голосовое сообщение" : "Файл") } }) }).catch(() => {}); document.getElementById("textInp").value = ""; attachedFile = null; const clip = document.getElementById("fileClipBtn"); clip.style.background = "transparent"; clip.innerHTML = "📎"; loadMessages(); }); }
