@@ -381,13 +381,61 @@
             });
         });
     }
+    function actionSendForwarded(targetUser) {
+        const room = [myAccount, targetUser].sort().join("_"); const msgId = "msg_" + Date.now();
+        const bodyMsg = { sender: myAccount, text: selectedMsgData.text ? "➡️ Переслано: " + selectedMsgData.text : "➡️ Переслано сообщение", time: Date.now() };
+        if (selectedMsgData.file) bodyMsg.file = selectedMsgData.file;
+        fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => {
+            closeForwardModal(); alert("Сообщение успешно переслано @" + targetUser); selectedMsgId = null; selectedMsgData = null;
+        }).catch(err => alert("Ошибка пересылки: " + err));
+    }
+
+    function actionDeleteTrigger() {
+        if (!selectedMsgId || !chatWith) return; if (!confirm("Удалить это сообщение у всех?")) return;
+        const room = [myAccount, chatWith].sort().join("_");
+        fetch(URL_FB + "messages/" + room + "/" + selectedMsgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify("") }).then(() => {
+            const el = document.getElementById(selectedMsgId); if (el) el.remove(); selectedMsgId = null;
+        }).catch(err => alert("Ошибка при удалении: " + err));
+    }
+
+    function actionLoadMyContacts() {
+        fetch(URL_FB + "contacts/" + myAccount + ".json").then(r => r.json()).then(contactsData => {
+            const area = document.getElementById("areaUsers"); area.innerHTML = contactsData ? "" : "Список пуст. Найдите кого-нибудь по ID выше!"; if (!contactsData) return;
+            fetch(URL_FB + "users.json").then(r => r.json()).then(globalUsers => {
+                Object.keys(contactsData).forEach(log => {
+                    if (!contactsData[log]) return;
+                    const container = document.createElement("div"); container.className = "swipe-container";
+                    const row = document.createElement("div"); row.className = "row";
+                    let presenceStatus = "<span style='color:rgba(255,255,255,0.4); font-size:12px;'>офлайн</span>";
+                    if (globalUsers && globalUsers[log] && globalUsers[log].lastSeen) {
+                        let timeDiff = Date.now() - globalUsers[log].lastSeen;
+                        if (timeDiff < 25000) { presenceStatus = "<span style='color:#28a745; font-size:12px; font-weight:bold;'>• в сети</span>"; } 
+                        else { let lastDate = new Date(globalUsers[log].lastSeen); presenceStatus = `<span style='color:rgba(255,255,255,0.4); font-size:11px;'>был(а) ${String(lastDate.getHours()).padStart(2,'0')}:${String(lastDate.getMinutes()).padStart(2,'0')}</span>`; }
+                    }
+                    row.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px; pointer-events:none;"><span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>${presenceStatus}</div>`;
+                    const delBtn = document.createElement("div"); delBtn.className = "swipe-btn"; delBtn.innerText = "Удалить"; delBtn.style.pointerEvents = "auto";
+                    delBtn.addEventListener("touchstart", (e) => { e.stopPropagation(); e.preventDefault(); actionDelContact(log); }, { passive: false });
+                    delBtn.onclick = (e) => { e.stopPropagation(); e.preventDefault(); actionDelContact(log); };
+                    let startX = 0, startY = 0, currentX = 0, currentY = 0, isSwiping = false, hasMoved = false;
+                    row.addEventListener("touchstart", (e) => { startX = e.touches.clientX; startY = e.touches.clientY; isSwiping = true; hasMoved = false; row.style.transition = "none"; }, { passive: true });
+                    row.addEventListener("touchmove", (e) => { 
+                        if (!isSwiping) return; currentX = e.touches.clientX; currentY = e.touches.clientY; let diffX = currentX - startX; let diffY = currentY - startY;
+                        if (Math.abs(diffY) > Math.abs(diffX)) { isSwiping = false; row.style.transform = "translateX(0)"; return; }
+                        if (diffX < -5) { hasMoved = true; if (diffX > -80) row.style.transform = `translateX(${diffX}px)`; } 
+                    }, { passive: true });
+                    row.addEventListener("touchend", () => { isSwiping = false; row.style.transition = "transform 0.2s ease"; let diffX = currentX - startX; if (hasMoved && diffX <= -40) { row.style.transform = "translateX(-80px)"; } else { row.style.transform = "translateX(0)"; } });
+                    row.onclick = () => { if (row.style.transform === "translateX(-80px)") { row.style.transform = "translateX(0)"; } else if (!hasMoved) { startPersonalChat(log); } };
+                    container.appendChild(delBtn); container.appendChild(row); area.appendChild(container);
+                });
+            });
+        });
+    }
 
     function actionDelContact(tLog) {
         if (confirm(`Удалить контакт @${tLog} из списка диалогов?`)) {
             fetch(URL_FB + "contacts/" + myAccount + "/" + tLog + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify("") }).then(() => { actionLoadMyContacts(); });
         }
     }
-
     function startPersonalChat(tLog) { chatWith = tLog; document.getElementById("chatTargetLabel").innerText = "@" + tLog; const area = document.getElementById("areaMessages"); area.innerHTML = "Загрузка сообщений..."; const room = [myAccount, chatWith].sort().join("_"); isFirstLoadForRoom[room] = true; document.getElementById("boxMain").classList.remove("active"); setTimeout(() => { document.getElementById("boxChatRoom").classList.add("active"); }, 50); if(chatTimer) clearInterval(chatTimer); loadMessages(); chatTimer = setInterval(loadMessages, 3000); }
     function backToMainSearch() { if(chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); } chatWith = ""; if(chatTimer) clearInterval(chatTimer); document.getElementById("boxChatRoom").classList.remove("active"); setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50); actionLoadMyContacts(); }
 
@@ -421,4 +469,10 @@
         const text = document.getElementById("textInp").value.trim(); if (!text && !attachedFile) return; if (!chatWith) return;
         const room = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now(); const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; if (attachedFile) bodyMsg.file = attachedFile;
         fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => {
-fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": Новое от ${myAccount}}, contents: { "en": text ? text : (attachedFile && attachedFile.voice ? "Голосовое сообщение" : "Файл") } }) }).catch(() => {}); document.getElementById("textInp").value = ""; attachedFile = null; const clip = document.getElementById("fileClipBtn"); clip.style.background = "transparent"; clip.innerHTML = "📎"; loadMessages(); }); }
+            fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": `Новое от ${myAccount}` }, contents: { "en": text ? text : (attachedFile && attachedFile.voice ? "Голосовое сообщение" : "Файл") } }) }).catch(() => {});
+            document.getElementById("textInp").value = ""; attachedFile = null; const clip = document.getElementById("fileClipBtn"); clip.style.background = "transparent"; clip.innerHTML = "📎<input type='file' id='fileInp' style='display:none;' onchange='handleFileSelect(this)'>"; loadMessages();
+        });
+    }
+</script>
+</body>
+</html>
