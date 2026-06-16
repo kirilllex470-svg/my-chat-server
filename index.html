@@ -14,7 +14,6 @@
         
         html, body { position: fixed; width: 100%; height: 100%; overflow: hidden; background: #1e1135; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1d2671 0%, #c33764 100%); display: flex; justify-content: center; align-items: center; box-sizing: border-box; color: #fff; user-select: none; -webkit-user-select: none; }
-        
         .win { background: rgba(20, 20, 35, 0.45); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 16px; width: 100%; max-width: 480px; height: 100dvh; display: none; flex-direction: column; box-sizing: border-box; will-change: transform, opacity; }
         .active { display: flex; animation: slideInRight 0.28s cubic-bezier(0.32, 0.94, 0.6, 1) forwards; }
         
@@ -28,6 +27,9 @@
         .msg.my { background: #007bff; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
         .msg.other { background: rgba(255,255,255,0.2); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg img { max-width: 100%; border-radius: 12px; margin-top: 4px; max-height: 200px; object-fit: cover; }
+        .file-link { color: #4fc3f7; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 13px; }
+        .file-link:hover { text-decoration: underline; }
+        
         .logout-btn-header { background: rgba(255, 77, 77, 0.2); border: 1px solid rgba(255, 77, 77, 0.3); color: #ff8585; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; width: auto; margin: 0; }
         .logout-btn-header:active { background: rgba(255, 77, 77, 0.4); }
         .swipe-container { position: relative; width: 100%; overflow: hidden; border-radius: 14px; background: rgba(255, 255, 255, 0.03); height: 50px; margin-bottom: 4px; flex-shrink: 0; }
@@ -102,7 +104,7 @@
                 <span class="tg-icon-btn" onclick="addEmoji('🚀')">🚀</span><span class="tg-icon-btn" onclick="addEmoji('👀')">👀</span>
             </div>
             <div class="tg-input-bar">
-                <label class="tg-icon-btn" id="fileClipBtn" style="margin:0;">📎
+                <label class="tg-icon-btn" id="fileClipBtn" style="margin:0; user-select:none; -webkit-user-select:none;">📎
                     <input type="file" id="fileInp" style="display:none;" onchange="handleFileSelect(this)">
                 </label>
                 <textarea id="textInp" class="tg-field" rows="1" placeholder="Cообщение..." onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
@@ -115,12 +117,16 @@
     let myAccount = "", myID = "", chatWith = "", chatTimer = null, globalMonitorTimer = null, heartbeatTimer = null;
     let attachedFile = null; let totalMessagesCount = {}; let isFirstLoadForRoom = {}; let globalKnownMessages = {};
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
+    
+    // Clear systemic path link to notification alert audio
     const msgSound = new Audio("https://mixkit.co");
+    
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({ appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733", autoRegister: true, notifyButton: { enable: false }, workerPath: "OneSignalSDKWorker.js", registrationScope: "/" });
         if (myAccount) { OneSignal.login(myAccount); }
     });
+
     function toggleEmojiTray(event) { event.stopPropagation(); document.getElementById("emojiPopTray").classList.toggle("open"); }
     document.addEventListener("click", function() { document.getElementById("emojiPopTray").classList.remove("open"); });
     
@@ -137,7 +143,8 @@
     function addEmoji(emoji) { const input = document.getElementById("textInp"); input.value += emoji; input.focus(); }
     
     function handleFileSelect(input) {
-        const file = input.files; if (!file) return;
+        const files = input.files; if (!files || files.length === 0) return;
+        const file = files[0]; // Fixed array assignment bug
         if (file.size > 2 * 1024 * 1024) { alert("Файл слишком большой! Максимум 2 МБ."); input.value = ""; return; }
         const reader = new FileReader();
         reader.onload = function(e) { attachedFile = { name: file.name, type: file.type, data: e.target.result }; const clip = document.getElementById("fileClipBtn"); clip.style.background = "rgba(40, 167, 69, 0.3)"; clip.innerText = "✅"; };
@@ -187,7 +194,6 @@
             } else { status.innerText = "Неверный логин или пароль!"; }
         }).catch(() => { status.innerText = "Ошибка сервера (нет связи)!"; });
     }
-
     function appLogout() {
         if (!confirm("Вы действительно хотите выйти из аккаунта?")) return;
         if (chatTimer) clearInterval(chatTimer);
@@ -239,7 +245,6 @@
         });
     }
     
-    // ИСПРАВЛЕНО ДЛЯ RENDER: Перезапись пустой строки очищает узел юзера без вызова ошибки Express роутинга
     function adminDeleteUser(tLog) {
         if (confirm(`Удалить пользователя ${tLog} из базы данных?`)) {
             fetch(URL_FB + "users/" + tLog + ".json", { 
@@ -261,6 +266,7 @@
             } else { alert("Пользователь с таким ID не зарегистрирован в системе!"); }
         });
     }
+
     function actionLoadMyContacts() {
         fetch(URL_FB + "contacts/" + myAccount + ".json")
         .then(r => r.json())
@@ -268,7 +274,6 @@
             const area = document.getElementById("areaUsers"); 
             area.innerHTML = contactsData ? "" : "Список пуст. Найдите кого-нибудь по ID выше!"; 
             if (!contactsData) return;
-            
             fetch(URL_FB + "users.json")
             .then(r => r.json())
             .then(globalUsers => {
@@ -288,7 +293,6 @@
                             presenceStatus = `<span style='color:rgba(255,255,255,0.4); font-size:11px;'>был(а) ${String(lastDate.getHours()).padStart(2,'0')}:${String(lastDate.getMinutes()).padStart(2,'0')}</span>`;
                         }
                     }
-
                     row.innerHTML = `
                         <div style="display:flex; flex-direction:column; gap:2px; pointer-events:none;">
                             <span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>
@@ -299,7 +303,6 @@
                     delBtn.className = "swipe-btn"; 
                     delBtn.innerText = "Удалить";
                     
-                    // ИЗОЛЯЦИЯ НАЖАТИЯ ДЛЯ СМАРТФОНОВ: Вызов удаления по первому касанию экрана
                     delBtn.style.pointerEvents = "auto";
                     delBtn.addEventListener("touchstart", (e) => {
                         e.stopPropagation();
@@ -329,7 +332,6 @@
         });
     }
 
-    // ИСПРАВЛЕНО ДЛЯ RENDER: Перезапись пустой строкой удаляет контакт из списка без вызова ошибок сервера Express
     function actionDelContact(tLog) {
         if (confirm(`Удалить контакт @${tLog} из списка диалогов?`)) {
             fetch(URL_FB + "contacts/" + myAccount + "/" + tLog + ".json", { 
@@ -342,7 +344,7 @@
 
     function startPersonalChat(tLog) { chatWith = tLog; document.getElementById("chatTargetLabel").innerText = "@" + tLog; const area = document.getElementById("areaMessages"); area.innerHTML = "Загрузка сообщений..."; const room = [myAccount, chatWith].sort().join("_"); isFirstLoadForRoom[room] = true; document.getElementById("boxMain").classList.remove("active"); setTimeout(() => { document.getElementById("boxChatRoom").classList.add("active"); }, 50); if(chatTimer) clearInterval(chatTimer); loadMessages(); chatTimer = setInterval(loadMessages, 3000); }
     function backToMainSearch() { if(chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); } chatWith = ""; if(chatTimer) clearInterval(chatTimer); document.getElementById("boxChatRoom").classList.remove("active"); setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50); actionLoadMyContacts(); }
-    
+
     function loadMessages() {
         if (!chatWith) return; const room = [myAccount, chatWith].sort().join("_");
         fetch(URL_FB + "typing/" + myAccount + "/" + chatWith + ".json").then(r => r.json()).then(isTyping => { const label = document.getElementById("chatTargetLabel"); if (isTyping === true) { label.innerText = "@" + chatWith + " (печатает...)"; } else { label.innerText = "@" + chatWith; } });
@@ -363,6 +365,7 @@
             totalMessagesCount[room] = msgIds.length; isFirstLoadForRoom[room] = false;
         });
     }
+    
     function actionSend() {
         const text = document.getElementById("textInp").value.trim(); if (!text && !attachedFile) return; if (!chatWith) return;
         const room = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now(); const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; if (attachedFile) bodyMsg.file = attachedFile;
