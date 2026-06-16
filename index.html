@@ -430,49 +430,81 @@
             });
         });
     }
+    // Исправлено для Render: передаем null для полной очистки узла сообщения
+    function actionDeleteTrigger() {
+        if (!selectedMsgId || !chatWith) return;
+        if (!confirm("Удалить это сообщение у всех?")) return;
+        
+        const room = [myAccount, chatWith].sort().join("_");
+        
+        fetch(URL_FB + "messages/" + room + "/" + selectedMsgId + ".json", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(null) // Передаем null вместо "" чтобы Render удалил запись
+        }).then(() => {
+            const el = document.getElementById(selectedMsgId);
+            if (el) el.remove();
+            selectedMsgId = null;
+            selectedMsgData = null;
+        }).catch(err => alert("Ошибка при удалении: " + err));
+    }
 
-    function actionDelContact(tLog) {
-        if (confirm(`Удалить контакт @${tLog} из списка диалогов?`)) {
-            fetch(URL_FB + "contacts/" + myAccount + "/" + tLog + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify("") }).then(() => { actionLoadMyContacts(); });
+    function actionForwardTrigger() {
+        if (!selectedMsgData) return;
+        const modal = document.getElementById("forwardModal");
+        const area = document.getElementById("forwardContactsArea");
+        modal.style.display = "flex";
+        area.innerHTML = "";
+
+        const mainContacts = document.getElementById("areaUsers").querySelectorAll(".swipe-container");
+        if (mainContacts.length === 0) {
+            area.innerHTML = "У вас нет контактов для пересылки.";
+            return;
         }
-    }
-    function startPersonalChat(tLog) { chatWith = tLog; document.getElementById("chatTargetLabel").innerText = "@" + tLog; const area = document.getElementById("areaMessages"); area.innerHTML = "Загрузка сообщений..."; const room = [myAccount, chatWith].sort().join("_"); isFirstLoadForRoom[room] = true; document.getElementById("boxMain").classList.remove("active"); setTimeout(() => { document.getElementById("boxChatRoom").classList.add("active"); }, 50); if(chatTimer) clearInterval(chatTimer); loadMessages(); chatTimer = setInterval(loadMessages, 3000); }
-    function backToMainSearch() { if(chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); } chatWith = ""; if(chatTimer) clearInterval(chatTimer); document.getElementById("boxChatRoom").classList.remove("active"); setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50); actionLoadMyContacts(); }
 
-    function loadMessages() {
-        if (!chatWith) return; const room = [myAccount, chatWith].sort().join("_");
-        fetch(URL_FB + "typing/" + myAccount + "/" + chatWith + ".json").then(r => r.json()).then(isTyping => { const label = document.getElementById("chatTargetLabel"); if (isTyping === true) { label.innerText = "@" + chatWith + " (печатает...)"; } else { label.innerText = "@" + chatWith; } });
-        document.getElementById("textInp").oninput = function() { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "true" }); clearTimeout(window.typingResetTimeout); window.typingResetTimeout = setTimeout(() => { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); }, 2000); };
-        fetch(URL_FB + "messages/" + room + ".json").then(r => r.json()).then(data => {
-            const area = document.getElementById("areaMessages"); if (!data) { area.innerHTML = "Сообщений нет. Напишите первым!"; totalMessagesCount[room] = 0; isFirstLoadForRoom[room] = false; return; }
-            if (area.innerHTML === "Загрузка сообщений..." || area.innerHTML === "Сообщений нет. Напишите первым!") { area.innerHTML = ""; }
-            const msgIds = Object.keys(data).sort();
-            msgIds.forEach(id => {
-                const m = data[id]; if (!document.getElementById(id) && isFirstLoadForRoom[room] === false && m.sender !== myAccount) { triggerTopBanner(m.sender, m.text); }
-                if (document.getElementById(id)) return;
-                const div = document.createElement("div"); div.className = "msg " + (m.sender === myAccount ? "my" : "other"); div.id = id;
-                div.onclick = (e) => openMessageMenu(e, id, m.sender === myAccount);
-                if (m.text) { div.innerHTML += `<span>${m.text}</span>`; }
-                if (m.file) { 
-                    if (m.file.voice) { div.innerHTML += `<div class="voice-msg"><audio controls src="${m.file.data}"></audio></div>`; }
-                    else if (m.file.type?.startsWith("image/")) { div.innerHTML += `<img src="${m.file.data}">`; } 
-                    else { div.innerHTML += `<a class="file-link" href="${m.file.data}" download="${m.file.name}">📂 ${m.file.name}</a>`; } 
-                }
-                if (m.time) { const d = new Date(m.time); div.innerHTML += `<span class="msg-time" style="font-size:10px; opacity:0.6; align-self:flex-end; margin-top:4px;">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`; }
-                area.appendChild(div); area.scrollTop = area.scrollHeight;
-            });
-            totalMessagesCount[room] = msgIds.length; isFirstLoadForRoom[room] = false;
+        mainContacts.forEach(container => {
+            const row = container.querySelector(".row");
+            if (!row) return;
+            const targetUser = row.querySelector("b").innerText.replace("@", "").trim();
+            
+            const btn = document.createElement("div");
+            btn.className = "forward-row";
+            btn.innerText = "👤 @" + targetUser;
+            btn.onclick = () => actionSendForwarded(targetUser);
+            area.appendChild(btn);
         });
     }
-    
-    function actionSend() {
-        const text = document.getElementById("textInp").value.trim(); if (!text && !attachedFile) return; if (!chatWith) return;
-        const room = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now(); const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; if (attachedFile) bodyMsg.file = attachedFile;
-        fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => {
-            fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": `Новое от ${myAccount}` }, contents: { "en": text ? text : (attachedFile && attachedFile.voice ? "Голосовое сообщение" : "Файл") } }) }).catch(() => {});
-            document.getElementById("textInp").value = ""; attachedFile = null; const clip = document.getElementById("fileClipBtn"); clip.style.background = "transparent"; clip.innerHTML = "📎<input type='file' id='fileInp' style='display:none;' onchange='handleFileSelect(this)'>"; loadMessages();
-        });
+    // Исправлено: точная сборка JSON-объекта для отправки на ваш сервер Render
+    function actionSendForwarded(targetUser) {
+        if (!selectedMsgData) return;
+        const room = [myAccount, targetUser].sort().join("_");
+        const msgId = "msg_" + Date.now();
+        
+        // Создаем правильное тело сообщения
+        const bodyMsg = {
+            sender: myAccount,
+            text: selectedMsgData.text ? "➡️ Переслано: " + selectedMsgData.text : "➡️ Переслано медиасообщение",
+            time: Date.now()
+        };
+        
+        // Если внутри пересылаемого сообщения был прикреплен файл или голос — бережно копируем его
+        if (selectedMsgData.file) {
+            bodyMsg.file = {
+                data: selectedMsgData.file.data,
+                type: selectedMsgData.file.type || "application/octet-stream",
+                name: selectedMsgData.file.name || "Файл",
+                voice: selectedMsgData.file.voice || false
+            };
+        }
+
+        fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(bodyMsg)
+        }).then(() => {
+            closeForwardModal();
+            alert("Сообщение успешно переслано @" + targetUser);
+            selectedMsgId = null;
+            selectedMsgData = null;
+        }).catch(err => alert("Ошибка пересылки: " + err));
     }
-</script>
-</body>
-</html>
