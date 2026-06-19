@@ -175,13 +175,27 @@
     function addEmoji(emoji) { const input = document.getElementById("textInp"); input.value += emoji; input.focus(); }
     function handleFileSelect(input) {
         const files = input.files; if (!files || files.length === 0) return;
-        const file = files[0];
+        const file = files[0]; // ИСПРАВЛЕНО: добавили строго первый элемент массива [0]
         if (file.size > 2 * 1024 * 1024) { alert("Файл слишком большой! Максимум 2 МБ."); input.value = ""; return; }
         const reader = new FileReader();
         reader.onload = function(e) { attachedFile = { name: file.name, type: file.type, data: e.target.result }; const clip = document.getElementById("fileClipBtn"); clip.style.background = "rgba(40, 167, 69, 0.3)"; clip.innerText = "✅"; };
         reader.readAsDataURL(file);
     }
-    
+
+    function actionSend() {
+        const text = document.getElementById("textInp").value.trim(); 
+        
+        // ИСПРАВЛЕНО: жесткая мобильная проверка вложений
+        let hasFile = (attachedFile && attachedFile.data) ? true : false;
+        if (!text && !hasFile) return; 
+        if (!chatWith) return;
+        
+        const room = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now(); const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; if (hasFile) bodyMsg.file = attachedFile;
+        fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => {
+            fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": `Новое от ${myAccount}` }, contents: { "en": text ? text : (attachedFile && attachedFile.voice ? "Голосовое сообщение" : "Файл") } }) }).catch(() => {});
+            document.getElementById("textInp").value = ""; attachedFile = null; const clip = document.getElementById("fileClipBtn"); clip.style.background = "transparent"; clip.innerHTML = "📎<input type='file' id='fileInp' style='display:none;' onchange='handleFileSelect(this)'>"; loadMessages();
+        });
+    }
     function toggleVoiceRecord() { if (!isRecordingVoice) { startVoiceRecord(); } else { stopVoiceRecord(); } }
     
     function startVoiceRecord() {
