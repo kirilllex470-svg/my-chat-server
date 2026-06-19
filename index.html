@@ -349,7 +349,7 @@
                 Object.keys(contactsData).forEach(log => {
                     if (!contactsData[log]) return;
                     
-                    // Создаем чистый контейнер строки без свайпов
+                    // Создаем чистый контейнер строки
                     const container = document.createElement("div"); 
                     container.style.cssText = "display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); margin-bottom: 8px; padding: 10px 14px; border-radius: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent;";
                     
@@ -368,18 +368,15 @@
                     // Клик на информацию открывает переписку
                     infoBlock.onclick = () => { startPersonalChat(log); };
                     
-                    // Правая часть: отдельная кнопка удаления (текстовая кнопка-крестик)
+                    // Правая часть: кнопка удаления
                     const delBtn = document.createElement("button");
                     delBtn.innerText = "❌";
                     delBtn.style.cssText = "background: rgba(255, 77, 77, 0.15); border: 1px solid rgba(255, 77, 77, 0.3); color: #ff8585; width: 36px; height: 36px; padding: 0; margin: 0; border-radius: 10px; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 10;";
                     
-                    // Нажатие на кнопку изолировано и вызывает только удаление
+                    // ИСПРАВЛЕНО: Оставили только один метод onclick, который блокирует проваливание клика и повторный вызов функции
                     delBtn.onclick = (e) => {
-                        e.stopPropagation(); // Блокируем проваливание клика в чат
-                        actionDelContact(log);
-                    };
-                    delBtn.ontouchstart = (e) => {
-                        e.stopPropagation();
+                        e.stopPropagation(); // Не дает запустить открытие чата
+                        e.preventDefault();  // Защищает от ложных тапов на мобильных
                         actionDelContact(log);
                     };
                     
