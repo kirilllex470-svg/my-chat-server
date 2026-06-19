@@ -348,52 +348,44 @@
             fetch(URL_FB + "users.json").then(r => r.json()).then(globalUsers => {
                 Object.keys(contactsData).forEach(log => {
                     if (!contactsData[log]) return;
-                    const container = document.createElement("div"); container.className = "swipe-container";
-                    const row = document.createElement("div"); row.className = "row";
+                    
+                    // Создаем чистый контейнер строки без свайпов
+                    const container = document.createElement("div"); 
+                    container.style.cssText = "display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); margin-bottom: 8px; padding: 10px 14px; border-radius: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent;";
+                    
                     let presenceStatus = "<span style='color:rgba(255,255,255,0.4); font-size:12px;'>офлайн</span>";
                     if (globalUsers && globalUsers[log] && globalUsers[log].lastSeen) {
                         let timeDiff = Date.now() - globalUsers[log].lastSeen;
                         if (timeDiff < 25000) { presenceStatus = "<span style='color:#28a745; font-size:12px; font-weight:bold;'>• в сети</span>"; } 
                         else { let lastDate = new Date(globalUsers[log].lastSeen); presenceStatus = `<span style='color:rgba(255,255,255,0.4); font-size:11px;'>был(а) ${String(lastDate.getHours()).padStart(2,'0')}:${String(lastDate.getMinutes()).padStart(2,'0')}</span>`; }
                     }
-                    row.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px; pointer-events:none;"><span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>${presenceStatus}</div>`;
                     
-                    const delBtn = document.createElement("div"); 
-                    delBtn.className = "swipe-btn"; 
-                    delBtn.innerText = "Удалить"; 
-                    delBtn.style.pointerEvents = "auto";
+                    // Левая часть: информация о контакте
+                    const infoBlock = document.createElement("div");
+                    infoBlock.style.cssText = "display: flex; flex-direction: column; gap: 2px; flex: 1;";
+                    infoBlock.innerHTML = `<span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>${presenceStatus}`;
                     
-                    // ИСПРАВЛЕНО: Полностью блокируем клик, чтобы он не проваливался в чат
-                    delBtn.addEventListener("touchstart", (e) => { 
-                        e.stopPropagation(); 
-                        e.preventDefault(); 
-                        actionDelContact(log); 
-                    }, { passive: false });
-
-                    delBtn.onclick = (e) => { 
-                        e.stopPropagation(); 
-                        e.preventDefault(); 
-                        actionDelContact(log); 
+                    // Клик на информацию открывает переписку
+                    infoBlock.onclick = () => { startPersonalChat(log); };
+                    
+                    // Правая часть: отдельная кнопка удаления (текстовая кнопка-крестик)
+                    const delBtn = document.createElement("button");
+                    delBtn.innerText = "❌";
+                    delBtn.style.cssText = "background: rgba(255, 77, 77, 0.15); border: 1px solid rgba(255, 77, 77, 0.3); color: #ff8585; width: 36px; height: 36px; padding: 0; margin: 0; border-radius: 10px; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 10;";
+                    
+                    // Нажатие на кнопку изолировано и вызывает только удаление
+                    delBtn.onclick = (e) => {
+                        e.stopPropagation(); // Блокируем проваливание клика в чат
+                        actionDelContact(log);
+                    };
+                    delBtn.ontouchstart = (e) => {
+                        e.stopPropagation();
+                        actionDelContact(log);
                     };
                     
-                    let startX = 0, startY = 0, currentX = 0, currentY = 0, isSwiping = false, hasMoved = false;
-                    row.addEventListener("touchstart", (e) => { startX = e.touches.clientX; startY = e.touches.clientY; isSwiping = true; hasMoved = false; row.style.transition = "none"; }, { passive: true });
-                    row.addEventListener("touchmove", (e) => { 
-                        if (!isSwiping) return; currentX = e.touches.clientX; currentY = e.touches.clientY; let diffX = currentX - startX; let diffY = currentY - startY;
-                        if (Math.abs(diffY) > Math.abs(diffX)) { isSwiping = false; row.style.transform = "translateX(0)"; return; }
-                        if (diffX < -5) { hasMoved = true; if (diffX > -80) row.style.transform = `translateX(${diffX}px)`; } 
-                    }, { passive: true });
-                    row.addEventListener("touchend", () => { isSwiping = false; row.style.transition = "transform 0.2s ease"; let diffX = currentX - startX; if (hasMoved && diffX <= -40) { row.style.transform = "translateX(-80px)"; } else { row.style.transform = "translateX(0)"; } });
-                    
-                    row.onclick = (e) => { 
-                        if (row.style.transform === "translateX(-80px)") { 
-                            row.style.transform = "translateX(0)"; 
-                        } else if (!hasMoved) { 
-                            startPersonalChat(log); 
-                        } 
-                    };
-                    
-                    container.appendChild(delBtn); container.appendChild(row); area.appendChild(container);
+                    container.appendChild(infoBlock);
+                    container.appendChild(delBtn);
+                    area.appendChild(container);
                 });
             });
         });
