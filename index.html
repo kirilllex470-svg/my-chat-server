@@ -401,18 +401,27 @@
             msgKeys.forEach(msgId => {
                 const msg = data[msgId]; if (!msg) return;
                 const r = document.createElement("div"); r.className = msg.sender === myAccount ? "msg my" : "msg other";
-                let html = "";
-                if (msg.file && msg.file.voice) { html = `<div class="voice-msg"><audio src="${msg.file.data}" controls preload="auto" style="width:100%; max-width:240px; height:32px;"></audio></div>`; } 
-                else if (msg.file && msg.file.type && msg.file.type.startsWith("image/")) { html = `<img src="${msg.file.data}">`; } 
-                else if (msg.file) { html = `<a href="${msg.file.data}" download="${msg.file.name}" class="file-link">📎 ${msg.file.name}</a>`; } 
-                else if (msg.text) { html = `<div>${msg.text}</div>`; }
+                
+                // Шапка для пересланного сообщения
+                let forwardHeader = "";
+                if (msg.forwardedFrom) {
+                    forwardHeader = `<div style="font-size: 11px; opacity: 0.6; font-style: italic; margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1px solid rgba(255,255,255,0.1);">↪ Переслано от @${msg.forwardedFrom}</div>`;
+                }
+
+                let html = forwardHeader; // Начинаем собирать контент с шапки
+                
+                if (msg.file && msg.file.voice) { html += `<div class="voice-msg"><audio src="${msg.file.data}" controls preload="auto" style="width:100%; max-width:240px; height:32px;"></audio></div>`; } 
+                else if (msg.file && msg.file.type && msg.file.type.startsWith("image/")) { html += `<img src="${msg.file.data}">`; } 
+                else if (msg.file) { html += `<a href="${msg.file.data}" download="${msg.file.name}" class="file-link">📎 ${msg.file.name}</a>`; } 
+                else if (msg.text) { html += `<div>${msg.text}</div>`; }
+                
                 r.innerHTML = html;
 
                 let pressTimer;
                 r.addEventListener('touchstart', (e) => {
                     pressTimer = setTimeout(() => {
                         e.preventDefault();
-                        openMessageMenu(e.touches[0].clientX, e.touches[0].clientY, msgId, msg);
+                        openMessageMenu(e.touches.clientX, e.touches.clientY, msgId, msg);
                     }, 600);
                 }, { passive: false });
                 r.addEventListener('touchend', () => clearTimeout(pressTimer));
@@ -426,9 +435,13 @@
     }
 
     function openMessageMenu(x, y, msgId, msgData) {
-        selectedMsgId = msgId; selectedMsgData = msgData;
-        const menu = document.getElementById("msgContextMenu"); const delBtn = document.getElementById("ctxDelBtn");
+        selectedMsgId = msgId;
+        selectedMsgData = msgData; // Здесь автоматически сохраняется и msgData.sender
+        const menu = document.getElementById("msgContextMenu"); 
+        const delBtn = document.getElementById("ctxDelBtn");
+        
         if (msgData.sender === myAccount) { delBtn.style.display = "flex"; } else { delBtn.style.display = "none"; }
+        
         menu.style.left = Math.min(x, window.innerWidth - 160) + "px";
         menu.style.top = Math.min(y, window.innerHeight - 100) + "px";
         menu.style.display = "flex";
@@ -459,13 +472,30 @@
     function closeForwardModal() { document.getElementById("forwardOverlay").style.display = "none"; }
 
     function executeForwardMessage(targetContact) {
-        if (!selectedMsgData) return; const room = [myAccount, targetContact].sort().join("_"); const msgId = "msg_" + Date.now();
-        const bodyMsg = { sender: myAccount, time: Date.now(), text: selectedMsgData.text ? `[Переслано]: ${selectedMsgData.text}` : "[Пересланное медиасообще]" };
+        if (!selectedMsgData) return; 
+        const room = [myAccount, targetContact].sort().join("_"); 
+        const msgId = "msg_" + Date.now();
+        
+        // Создаем объект сообщения и добавляем поле forwardedFrom
+        const bodyMsg = { 
+            sender: myAccount, 
+            time: Date.now(),
+            text: selectedMsgData.text ? selectedMsgData.text : "",
+            forwardedFrom: selectedMsgData.forwardedFrom || selectedMsgData.sender // Если сообщение уже было переслано, сохраняем первого автора
+        };
         if (selectedMsgData.file) bodyMsg.file = selectedMsgData.file;
-        fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => {
-            closeForwardModal(); alert(`Сообщение успешно переслано пользователю @${targetContact}!`); if (chatWith === targetContact) loadMessages();
+
+        fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { 
+            method: "PUT", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify(bodyMsg) 
+        }).then(() => {
+            closeForwardModal(); 
+            alert(`Сообщение успешно переслано пользователю @${targetContact}!`); 
+            if (chatWith === targetContact) loadMessages();
         });
     }
+
 </script>
 </body>
 </html>
