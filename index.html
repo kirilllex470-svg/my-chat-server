@@ -93,10 +93,9 @@
             <h4 style="margin: 0; font-size: 16px; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span id="chatTargetLabel">@чат</span></h4>
             <div class="logout-btn-header" onclick="appLogout()">Выйти 🚪</div>
         </div>
-        
         <div class="box" id="areaMessages" style="flex: 1; margin-bottom: 10px; background: transparent; border: none; padding: 4px 0;">Загрузка истории...</div>
         
-         <div style="position: relative; width: 100%; display: flex; align-items: center; flex-shrink: 0; margin-top: auto; gap: 4px; box-sizing: border-box;">
+        <div style="position: relative; width: 100%; display: flex; align-items: center; flex-shrink: 0; margin-top: auto; gap: 4px; box-sizing: border-box;">
             <div id="emojiPopTray" class="tg-emoji-pop">
                 <span class="tg-icon-btn" onclick="addEmoji('😀')">😀</span><span class="tg-icon-btn" onclick="addEmoji('😂')">😂</span><span class="tg-icon-btn" onclick="addEmoji('👍')">👍</span><span class="tg-icon-btn" onclick="addEmoji('❤️')">❤️</span>
                 <span class="tg-icon-btn" onclick="addEmoji('🔥')">🔥</span><span class="tg-icon-btn" onclick="addEmoji('🎉')">🎉</span><span class="tg-icon-btn" onclick="addEmoji('😮')">😮</span><span class="tg-icon-btn" onclick="addEmoji('😢')">😢</span>
@@ -109,7 +108,6 @@
                 <textarea id="textInp" class="tg-field" rows="1" placeholder="Cообщение..." onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
                 <div class="tg-icon-btn" style="width: 28px; height: 28px; font-size: 16px;" onclick="toggleEmojiTray(event)">😀</div>
             </div>
-            <!-- Кнопки с фиксированным размером 36px, чтобы они не улетали на узких экранах -->
             <button id="voiceBtn" class="tg-send-btn" style="background: #28a745; margin-left: 0; width: 36px; height: 36px; font-size: 15px;" onclick="toggleVoiceRecord()">🎙️</button>
             <button class="tg-send-btn" style="margin-left: 0; width: 36px; height: 36px; font-size: 15px;" onclick="actionSend()">🚀</button>
         </div>
@@ -120,7 +118,7 @@
     let attachedFile = null; let totalMessagesCount = {}; let isFirstLoadForRoom = {}; let globalKnownMessages = {};
     let mediaRecorder = null, audioChunks = [], isRecordingVoice = false;
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
-    const msgSound = new Audio("https://mixkit.co");
+    const msgSound = new Audio("https://google.com");
     
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async function(OneSignal) {
@@ -138,10 +136,8 @@
         msgSound.play().catch(e => console.log("Audio block bypass active", e));
         setTimeout(closeInAppAlert, 4000); 
     }
-    
     function closeInAppAlert() { document.getElementById("inAppNotification").classList.remove("show"); }
     function addEmoji(emoji) { const input = document.getElementById("textInp"); input.value += emoji; input.focus(); }
-    
     function handleFileSelect(input) {
         const files = input.files; if (!files || files.length === 0) return;
         const file = files[0];
@@ -154,13 +150,15 @@
     function toggleVoiceRecord() { if (!isRecordingVoice) { startVoiceRecord(); } else { stopVoiceRecord(); } }
     
     function startVoiceRecord() {
+        let options = { mimeType: 'audio/webm' };
+        if (!MediaRecorder.isTypeSupported('audio/webm')) { options = { mimeType: 'audio/mp4' }; }
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            mediaRecorder = new MediaRecorder(stream); audioChunks = [];
+            mediaRecorder = new MediaRecorder(stream, options); audioChunks = [];
             mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
             mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const audioBlob = new Blob(audioChunks, { type: options.mimeType });
                 const reader = new FileReader();
-                reader.onloadend = () => { attachedFile = { name: "Голосовое сообщение.webm", type: "audio/webm", voice: true, data: reader.result }; actionSend(); };
+                reader.onloadend = () => { attachedFile = { name: options.mimeType.includes('mp4') ? "Voice.mp4" : "Voice.webm", type: options.mimeType, voice: true, data: reader.result }; actionSend(); };
                 reader.readAsDataURL(audioBlob);
                 stream.getTracks().forEach(track => track.stop());
             };
@@ -183,7 +181,6 @@
             return fetch(URL_FB + "users/" + log + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pas, id: customID, lastSeen: Date.now() }) });
         }).then(res => { if(res) { status.style.color = "#28a745"; status.innerText = "Успешно! Теперь нажмите 'Войти'"; } }).catch(() => { status.innerText = "Ошибка сети при регистрации!"; });
     }
-    
     function appLogin() {
         const log = document.getElementById("loginInp").value.trim().toLowerCase();
         const pas = document.getElementById("passInp").value;
@@ -210,21 +207,17 @@
         if (chatTimer) clearInterval(chatTimer);
         if (globalMonitorTimer) clearInterval(globalMonitorTimer);
         if (heartbeatTimer) clearInterval(heartbeatTimer);
-        
         fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(0) })
         .then(() => {
             if (chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); }
             myAccount = ""; myID = ""; chatWith = ""; totalMessagesCount = {}; isFirstLoadForRoom = {};
-            
             document.getElementById("boxMain").classList.remove("active");
             document.getElementById("boxChatRoom").classList.remove("active");
             const status = document.getElementById("authStatus");
             status.style.color = "#28a745"; status.innerText = "Вы успешно вышли из системы.";
-            
             setTimeout(() => { document.getElementById("boxAuth").classList.add("active"); }, 50);
         });
     }
-    
     function startGlobalMessageMonitoring() {
         if (globalMonitorTimer) clearInterval(globalMonitorTimer);
         fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => {
@@ -258,11 +251,7 @@
     
     function adminDeleteUser(tLog) {
         if (confirm(`Удалить пользователя ${tLog} из базы данных?`)) {
-            fetch(URL_FB + "users/" + tLog + ".json", { 
-                method: "PUT", 
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify("") 
-            }).then(() => { loadAdminUsersList(); actionLoadMyContacts(); });
+            fetch(URL_FB + "users/" + tLog + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify("") }).then(() => { loadAdminUsersList(); actionLoadMyContacts(); });
         }
     }
     
@@ -277,52 +266,24 @@
             } else { alert("Пользователь с таким ID не зарегистрирован в системе!"); }
         });
     }
-
     function actionLoadMyContacts() {
-        fetch(URL_FB + "contacts/" + myAccount + ".json")
-        .then(r => r.json())
-        .then(contactsData => {
-            const area = document.getElementById("areaUsers"); 
-            area.innerHTML = contactsData ? "" : "Список пуст. Найдите кого-нибудь по ID выше!"; 
-            if (!contactsData) return;
-            fetch(URL_FB + "users.json")
-            .then(r => r.json())
-            .then(globalUsers => {
+        fetch(URL_FB + "contacts/" + myAccount + ".json").then(r => r.json()).then(contactsData => {
+            const area = document.getElementById("areaUsers"); area.innerHTML = contactsData ? "" : "Список пуст. Найдите кого-нибудь по ID выше!"; if (!contactsData) return;
+            fetch(URL_FB + "users.json").then(r => r.json()).then(globalUsers => {
                 Object.keys(contactsData).forEach(log => {
                     if (!contactsData[log]) return;
-                    
                     const container = document.createElement("div"); container.className = "swipe-container";
                     const row = document.createElement("div"); row.className = "row";
-                    
                     let presenceStatus = "<span style='color:rgba(255,255,255,0.4); font-size:12px;'>офлайн</span>";
                     if (globalUsers && globalUsers[log] && globalUsers[log].lastSeen) {
                         let timeDiff = Date.now() - globalUsers[log].lastSeen;
-                        if (timeDiff < 25000) {
-                            presenceStatus = "<span style='color:#28a745; font-size:12px; font-weight:bold;'>• в сети</span>";
-                        } else {
-                            let lastDate = new Date(globalUsers[log].lastSeen);
-                            presenceStatus = `<span style='color:rgba(255,255,255,0.4); font-size:11px;'>был(а) ${String(lastDate.getHours()).padStart(2,'0')}:${String(lastDate.getMinutes()).padStart(2,'0')}</span>`;
-                        }
+                        if (timeDiff < 25000) { presenceStatus = "<span style='color:#28a745; font-size:12px; font-weight:bold;'>• в сети</span>"; } 
+                        else { let lastDate = new Date(globalUsers[log].lastSeen); presenceStatus = `<span style='color:rgba(255,255,255,0.4); font-size:11px;'>был(а) ${String(lastDate.getHours()).padStart(2,'0')}:${String(lastDate.getMinutes()).padStart(2,'0')}</span>`; }
                     }
-                    row.innerHTML = `
-                        <div style="display:flex; flex-direction:column; gap:2px; pointer-events:none;">
-                            <span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>
-                            ${presenceStatus}
-                        </div>`;
-                    
-                    const delBtn = document.createElement("div"); 
-                    delBtn.className = "swipe-btn"; 
-                    delBtn.innerText = "Удалить";
-                    
-                    delBtn.style.pointerEvents = "auto";
-                    delBtn.addEventListener("touchstart", (e) => {
-                        e.stopPropagation(); e.preventDefault(); actionDelContact(log);
-                    }, { passive: false });
-
-                    delBtn.onclick = (e) => { 
-                        e.stopPropagation(); e.preventDefault(); actionDelContact(log); 
-                    };
-                    
+                    row.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px; pointer-events:none;"><span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>${presenceStatus}</div>`;
+                    const delBtn = document.createElement("div"); delBtn.className = "swipe-btn"; delBtn.innerText = "Удалить"; delBtn.style.pointerEvents = "auto";
+                    delBtn.addEventListener("touchstart", (e) => { e.stopPropagation(); e.preventDefault(); actionDelContact(log); }, { passive: false });
+                    delBtn.onclick = (e) => { e.stopPropagation(); e.preventDefault(); actionDelContact(log); };
                     let startX = 0, startY = 0, currentX = 0, currentY = 0, isSwiping = false, hasMoved = false;
                     row.addEventListener("touchstart", (e) => { startX = e.touches.clientX; startY = e.touches.clientY; isSwiping = true; hasMoved = false; row.style.transition = "none"; }, { passive: true });
                     row.addEventListener("touchmove", (e) => { 
@@ -332,47 +293,45 @@
                     }, { passive: true });
                     row.addEventListener("touchend", () => { isSwiping = false; row.style.transition = "transform 0.2s ease"; let diffX = currentX - startX; if (hasMoved && diffX <= -40) { row.style.transform = "translateX(-80px)"; } else { row.style.transform = "translateX(0)"; } });
                     row.onclick = () => { if (row.style.transform === "translateX(-80px)") { row.style.transform = "translateX(0)"; } else if (!hasMoved) { startPersonalChat(log); } };
-                    
                     container.appendChild(delBtn); container.appendChild(row); area.appendChild(container);
                 });
             });
         });
     }
 
-    function actionDelContact(tLog) {
-        if (confirm(`Удалить контакт @${tLog} из списка диалогов?`)) {
-            fetch(URL_FB + "contacts/" + myAccount + "/" + tLog + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify("") }).then(() => { actionLoadMyContacts(); });
-        }
+    function startPersonalChat(log) {
+        chatWith = log; document.getElementById("chatTargetLabel").innerText = "@" + chatWith;
+        document.getElementById("boxMain").classList.remove("active");
+        setTimeout(() => { document.getElementById("boxChatRoom").classList.add("active"); }, 50);
+        loadMessages(); if (chatTimer) clearInterval(chatTimer);
+        chatTimer = setInterval(loadMessages, 3000);
     }
 
-    function startPersonalChat(tLog) { chatWith = tLog; document.getElementById("chatTargetLabel").innerText = "@" + tLog; const area = document.getElementById("areaMessages"); area.innerHTML = "Загрузка сообщений..."; const room = [myAccount, chatWith].sort().join("_"); isFirstLoadForRoom[room] = true; document.getElementById("boxMain").classList.remove("active"); setTimeout(() => { document.getElementById("boxChatRoom").classList.add("active"); }, 50); if(chatTimer) clearInterval(chatTimer); loadMessages(); chatTimer = setInterval(loadMessages, 3000); }
-    function backToMainSearch() { if(chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); } chatWith = ""; if(chatTimer) clearInterval(chatTimer); document.getElementById("boxChatRoom").classList.remove("active"); setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50); actionLoadMyContacts(); }
+    function backToMainSearch() {
+        chatWith = ""; if (chatTimer) clearInterval(chatTimer);
+        document.getElementById("boxChatRoom").classList.remove("active");
+        setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50);
+        actionLoadMyContacts();
+    }
 
     function loadMessages() {
         if (!chatWith) return; const room = [myAccount, chatWith].sort().join("_");
-        fetch(URL_FB + "typing/" + myAccount + "/" + chatWith + ".json").then(r => r.json()).then(isTyping => { const label = document.getElementById("chatTargetLabel"); if (isTyping === true) { label.innerText = "@" + chatWith + " (печатает...)"; } else { label.innerText = "@" + chatWith; } });
-        document.getElementById("textInp").oninput = function() { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "true" }); clearTimeout(window.typingResetTimeout); window.typingResetTimeout = setTimeout(() => { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); }, 2000); };
         fetch(URL_FB + "messages/" + room + ".json").then(r => r.json()).then(data => {
-            const area = document.getElementById("areaMessages"); if (!data) { area.innerHTML = "Сообщений нет. Напишите первым!"; totalMessagesCount[room] = 0; isFirstLoadForRoom[room] = false; return; }
-            if (area.innerHTML === "Загрузка сообщений..." || area.innerHTML === "Сообщений нет. Напишите первым!") { area.innerHTML = ""; }
-            const msgIds = Object.keys(data).sort();
-            msgIds.forEach(id => {
-                const m = data[id]; if (!document.getElementById(id) && isFirstLoadForRoom[room] === false && m.sender !== myAccount) { triggerTopBanner(m.sender, m.text); }
-                if (document.getElementById(id)) return;
-                const div = document.createElement("div"); div.className = "msg " + (m.sender === myAccount ? "my" : "other"); div.id = id;
-                if (m.text) { div.innerHTML += `<span>${m.text}</span>`; }
-                if (m.file) { 
-                    if (m.file.voice) { div.innerHTML += `<div class="voice-msg"><audio controls src="${m.file.data}"></audio></div>`; }
-                    else if (m.file.type?.startsWith("image/")) { div.innerHTML += `<img src="${m.file.data}">`; } 
-                    else { div.innerHTML += `<a class="file-link" href="${m.file.data}" download="${m.file.name}">📂 ${m.file.name}</a>`; } 
-                }
-                if (m.time) { const d = new Date(m.time); div.innerHTML += `<span class="msg-time" style="font-size:10px; opacity:0.6; align-self:flex-end; margin-top:4px;">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`; }
-                area.appendChild(div); area.scrollTop = area.scrollHeight;
+            const area = document.getElementById("areaMessages"); area.innerHTML = ""; if (!data) { area.innerHTML = "Нет сообщений."; return; }
+            Object.keys(data).forEach(msgId => {
+                const msg = data[msgId]; if (!msg) return;
+                const r = document.createElement("div"); r.className = msg.sender === myAccount ? "msg my" : "msg other";
+                let html = "";
+                if (msg.file && msg.file.voice) { html = `<div class="voice-msg"><audio src="${msg.file.data}" controls preload="metadata"></audio></div>`; } 
+                else if (msg.file && msg.file.type && msg.file.type.startsWith("image/")) { html = `<img src="${msg.file.data}">`; } 
+                else if (msg.file) { html = `<a href="${msg.file.data}" download="${msg.file.name}" class="file-link">📎 ${msg.file.name}</a>`; } 
+                else if (msg.text) { html = `<div>${msg.text}</div>`; }
+                r.innerHTML = html; area.appendChild(r);
             });
-            totalMessagesCount[room] = msgIds.length; isFirstLoadForRoom[room] = false;
+            area.scrollTop = area.scrollHeight;
         });
     }
-    
+
     function actionSend() {
         const text = document.getElementById("textInp").value.trim(); if (!text && !attachedFile) return; if (!chatWith) return;
         const room = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now(); const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; if (attachedFile) bodyMsg.file = attachedFile;
