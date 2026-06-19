@@ -77,6 +77,25 @@
         .msg-context-item.del-action { color: #ff6b6b; }
         .forward-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 20000; display: none; justify-content: center; align-items: center; }
         .forward-modal { background: #251643; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; width: 90%; max-width: 360px; max-height: 70dvh; display: flex; flex-direction: column; padding: 16px; box-sizing: border-box; }
+                /* Красивый фоновый узор с надписью МСБ55115 */
+        #areaMessages {
+            background-color: transparent !important;
+            position: relative;
+        }
+        
+        #areaMessages::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            opacity: 0.04; /* Делает текст очень бледным, чтобы он не мешал читать переписку */
+            pointer-events: none;
+            
+            /* Создаем бесконечно повторяющийся текстовый узор */
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='160' height='100' viewBox='0 0 160 100'><text x='20' y='50' fill='%23ffffff' font-family='sans-serif' font-weight='bold' font-size='12' transform='rotate(-25 80 50)'>МСБ55115</text></svg>");
+            background-repeat: repeat;
+        }
+
     </style>
 </head>
 <body>
