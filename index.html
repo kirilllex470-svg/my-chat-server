@@ -495,6 +495,23 @@
             if (chatWith === targetContact) loadMessages();
         });
     }
+    // ФУНКЦИЯ УДАЛЕНИЯ КОНТАКТА ИЗ СПИСКА ДИАЛОГОВ
+    function actionDelContact(targetLog) {
+        if (!targetLog) return;
+        if (!confirm(`Вы действительно хотите удалить диалог с @${targetLog}?`)) return;
+        
+        // Удаляем запись о контакте из ветки текущего пользователя в Firebase
+        fetch(URL_FB + "contacts/" + myAccount + "/" + targetLog + ".json", {
+            method: "DELETE" // Используем метод DELETE для полного стирания ноды
+        })
+        .then(() => {
+            alert(`Диалог с @${targetLog} успешно удален.`);
+            actionLoadMyContacts(); // Перезагружаем список контактов на экране
+        })
+        .catch(err => {
+            alert("Ошибка сети при удалении контакта: " + err);
+        });
+    }
 
 </script>
 </body>
