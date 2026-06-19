@@ -357,9 +357,25 @@
                         else { let lastDate = new Date(globalUsers[log].lastSeen); presenceStatus = `<span style='color:rgba(255,255,255,0.4); font-size:11px;'>был(а) ${String(lastDate.getHours()).padStart(2,'0')}:${String(lastDate.getMinutes()).padStart(2,'0')}</span>`; }
                     }
                     row.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px; pointer-events:none;"><span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>${presenceStatus}</div>`;
-                    const delBtn = document.createElement("div"); delBtn.className = "swipe-btn"; delBtn.innerText = "Удалить"; delBtn.style.pointerEvents = "auto";
-                    delBtn.addEventListener("touchstart", (e) => { e.stopPropagation(); e.preventDefault(); actionDelContact(log); }, { passive: false });
-                    delBtn.onclick = (e) => { e.stopPropagation(); e.preventDefault(); actionDelContact(log); };
+                    
+                    const delBtn = document.createElement("div"); 
+                    delBtn.className = "swipe-btn"; 
+                    delBtn.innerText = "Удалить"; 
+                    delBtn.style.pointerEvents = "auto";
+                    
+                    // ИСПРАВЛЕНО: Полностью блокируем клик, чтобы он не проваливался в чат
+                    delBtn.addEventListener("touchstart", (e) => { 
+                        e.stopPropagation(); 
+                        e.preventDefault(); 
+                        actionDelContact(log); 
+                    }, { passive: false });
+
+                    delBtn.onclick = (e) => { 
+                        e.stopPropagation(); 
+                        e.preventDefault(); 
+                        actionDelContact(log); 
+                    };
+                    
                     let startX = 0, startY = 0, currentX = 0, currentY = 0, isSwiping = false, hasMoved = false;
                     row.addEventListener("touchstart", (e) => { startX = e.touches.clientX; startY = e.touches.clientY; isSwiping = true; hasMoved = false; row.style.transition = "none"; }, { passive: true });
                     row.addEventListener("touchmove", (e) => { 
@@ -368,7 +384,15 @@
                         if (diffX < -5) { hasMoved = true; if (diffX > -80) row.style.transform = `translateX(${diffX}px)`; } 
                     }, { passive: true });
                     row.addEventListener("touchend", () => { isSwiping = false; row.style.transition = "transform 0.2s ease"; let diffX = currentX - startX; if (hasMoved && diffX <= -40) { row.style.transform = "translateX(-80px)"; } else { row.style.transform = "translateX(0)"; } });
-                    row.onclick = () => { if (row.style.transform === "translateX(-80px)") { row.style.transform = "translateX(0)"; } else if (!hasMoved) { startPersonalChat(log); } };
+                    
+                    row.onclick = (e) => { 
+                        if (row.style.transform === "translateX(-80px)") { 
+                            row.style.transform = "translateX(0)"; 
+                        } else if (!hasMoved) { 
+                            startPersonalChat(log); 
+                        } 
+                    };
+                    
                     container.appendChild(delBtn); container.appendChild(row); area.appendChild(container);
                 });
             });
