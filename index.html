@@ -9,6 +9,44 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://onesignal.com" defer></script>
     <style>
+                /* Стиль самого видео-кружка в истории чата */
+        .video-msg {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            margin-top: 4px;
+        }
+        .video-msg video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Обрезает видео строго в круг, убирая черные поля */
+        }
+
+        /* Окошко предпросмотра камеры над клавиатурой во время записи */
+        .video-preview-holder {
+            position: absolute;
+            bottom: 60px;
+            right: 14px;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #2481cc;
+            background: #000;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .video-preview-holder video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Зеркалит камеру, чтобы было удобно смотреть на себя */
+        }
         /* Фирменный фоновый узор МСБ55115 с узорами и иконками чата */
         #areaMessages {
             background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTgwIDE4MCI+CjxzdHlsZT4KLnR4dCB7IGZpbGw6IHJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSk7IGZvbnQtZmFtaWx5OiBzYW5zLXNlcmlmOyBmb250LXdlaWdodDogYm9sZDsgZm9udC1zaXplOiAxM3B4OyB9Ci5pY28geyBmaWxsOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDQpOyBmb250LWZhbWlseTogc2Fucy1zZXJpZjsgZm9udC1zaXplOiAxNnB4OyB9Cjwvc3R5bGU+CjxnIHRyYW5zZm9ybT0icm90YXRlKC0yMCA5MCA5MCkiPgo8dGV4dCB4PSI0NSIgeT0iOTUiIGNsYXNzPSJ0eHQiPiYjMTA1MjsmIzEwNTc7JiMxMDQxOzU1MTE1PC90ZXh0Pgo8dGV4dCB4PSIyMCIgeT0iNDAiIGNsYXNzPSJpY28iPiYjOTk5Mjs8L3RleHQ+Cjx0ZXh0IHg9IjE0MCIgeT0iNDAiIGNsYXNzPSJpY28iPiYjOTcyOTs8L3RleHQ+Cjx0ZXh0IHg9IjIwIiB5PSIxNTAiIGNsYXNzPSJpY28iPiYjMTI4MTcyOzwvdGV4dD4KPHRleHQgeD0iMTQwIiB5PSIxNTAiIGNsYXNzPSJpY28iPiYjMTAwMjQ7PC90ZXh0Pgo8L2c+Cjwvc3ZnPg==") !important;
@@ -174,6 +212,11 @@
                 <span class="tg-icon-btn" onclick="addEmoji('🔥')">🔥</span><span class="tg-icon-btn" onclick="addEmoji('🎉')">🎉</span><span class="tg-icon-btn" onclick="addEmoji('😮')">😮</span><span class="tg-icon-btn" onclick="addEmoji('😢')">😢</span>
                 <span class="tg-icon-btn" onclick="addEmoji('🚀')">🚀</span><span class="tg-icon-btn" onclick="addEmoji('👀')">👀</span>
             </div>
+                            <!-- Круглое окошко предпросмотра камеры перед глазами -->
+                <div id="videoPreviewBox" class="video-preview-holder">
+                    <video id="videoPreview" autoplay muted playsinline></video>
+                </div>
+
             <div class="tg-input-bar">
                 <label class="tg-icon-btn" id="fileClipBtn" style="margin:0; width: 28px; height: 28px; font-size: 16px; user-select:none; -webkit-user-select:none;">📎
                     <input type="file" id="fileInp" style="display:none;" onchange="handleFileSelect(this)">
@@ -189,7 +232,8 @@
                 <textarea id="textInp" class="tg-field" rows="1" placeholder="Cообщение..." onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
                 <div class="tg-icon-btn" style="width: 28px; height: 28px; font-size: 16px;" onclick="toggleEmojiTray(event)">😀</div>
             </div>
-
+            <!-- Кнопка камеры для записи кружков -->
+            <button id="videoBtn" class="tg-send-btn" style="background: #2481cc; margin-left: 0; width: 36px; height: 36px; font-size: 15px;" onclick="toggleVideoRecord()">📷</button>
             <!-- Кнопка микрофона (Зеленая) -->
             <button id="voiceBtn" class="tg-send-btn" style="background: #28a745; margin-left: 0; width: 36px; height: 36px; font-size: 15px;" onclick="toggleVoiceRecord()">🎙️</button>
              <!-- СТРОГО ОДНА КНОПКА ОТПРАВКИ (Синяя с самолетиком) -->
@@ -219,6 +263,7 @@
     let mediaRecorder = null, audioChunks = [], isRecordingVoice = false;
     let voiceSeconds = 0, voiceTimerInterval = null;
     let selectedMsgId = null, selectedMsgData = null;
+    let isRecordingVideo = false, videoStream = null;
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
     const msgSound = new Audio("https://google.com");
     
@@ -460,7 +505,7 @@
         actionLoadMyContacts();
     }
 
-    function loadMessages() {
+        function loadMessages() {
         if (!chatWith) return; const room = [myAccount, chatWith].sort().join("_");
         fetch(URL_FB + "messages/" + room + ".json").then(r => r.json()).then(data => {
             const area = document.getElementById("areaMessages"); if (!data) { area.innerHTML = "Нет сообщений."; return; }
@@ -473,21 +518,47 @@
                 const msg = data[msgId]; if (!msg) return;
                 const r = document.createElement("div"); r.className = msg.sender === myAccount ? "msg my" : "msg other";
                 
-                // Шапка для пересланного сообщения
+                // 1. Шапка для пересланного сообщения
                 let forwardHeader = "";
                 if (msg.forwardedFrom) {
                     forwardHeader = `<div style="font-size: 11px; opacity: 0.6; font-style: italic; margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1px solid rgba(255,255,255,0.1);">↪ Переслано от @${msg.forwardedFrom}</div>`;
                 }
 
-                let html = forwardHeader; // Начинаем собирать контент с шапки
+                // 2. Получаем точное время (Часы:Минуты)
+                let timeStr = "";
+                if (msg.time) {
+                    const d = new Date(msg.time);
+                    timeStr = String(d.getHours()).padStart(2, '0') + ":" + String(d.getMinutes()).padStart(2, '0');
+                }
+
+                // ВОТ ЭТО МЕСТО, КУДА МЫ ВСТАВИЛИ ПРОВЕРКУ ВИДЕО-КРУЖКА:
+                let html = forwardHeader; 
                 
-                if (msg.file && msg.file.voice) { html += `<div class="voice-msg"><audio src="${msg.file.data}" controls preload="auto" style="width:100%; max-width:240px; height:32px;"></audio></div>`; } 
-                else if (msg.file && msg.file.type && msg.file.type.startsWith("image/")) { html += `<img src="${msg.file.data}">`; } 
-                else if (msg.file) { html += `<a href="${msg.file.data}" download="${msg.file.name}" class="file-link">📎 ${msg.file.name}</a>`; } 
-                else if (msg.text) { html += `<div>${msg.text}</div>`; }
+                if (msg.file && msg.file.isRoundVideo) { 
+                    // Круглый видеоплеер (звук включается/выключается по нажатию на кружок)
+                    html += `<div class="video-msg"><video src="${msg.file.data}" loop autoplay muted playsinline onclick="this.muted = !this.muted;"></video></div>`; 
+                } 
+                else if (msg.file && msg.file.voice) {  
+                    html += `<div class="voice-msg"><audio src="${msg.file.data}" controls preload="auto" style="width:100%; max-width:240px; height:32px;"></audio></div>`; 
+                }
+                else if (msg.file && msg.file.type && msg.file.type.startsWith("image/")) { 
+                    html += `<img src="${msg.file.data}">`; 
+                } 
+                else if (msg.file) { 
+                    html += `<a href="${msg.file.data}" download="${msg.file.name}" class="file-link">📎 ${msg.file.name}</a>`; 
+                } 
+                else if (msg.text) { 
+                    html += `<div>${msg.text}</div>`; 
+                }
+                
+                // Добавляем время отправки в самый низ облачка
+                if (timeStr) {
+                    html += `<div class="msg-meta">${timeStr}</div>`;
+                }
                 
                 r.innerHTML = html;
 
+                // Слушатели долгих тапов для удаления и пересылки
                 let pressTimer;
                 r.addEventListener('touchstart', (e) => {
                     pressTimer = setTimeout(() => {
@@ -582,6 +653,70 @@
         .catch(err => {
             alert("Ошибка сети при удалении контакта: " + err);
         });
+    }
+    function toggleVideoRecord() { if (!isRecordingVideo) { startVideoRecord(); } else { stopVideoRecord(); } }
+
+    function startVideoRecord() {
+        // Запрашиваем доступ сразу к селфи-камере и микрофону
+        navigator.mediaDevices.getUserMedia({ video: { width: 400, height: 400, facingMode: "user" }, audio: true })
+        .then(stream => {
+            videoStream = stream;
+            
+            // Включаем маленькое круглое окошко предпросмотра на экране
+            const previewVideo = document.getElementById("videoPreview");
+            previewVideo.srcObject = stream;
+            document.getElementById("videoPreviewBox").style.display = "block";
+
+            // Настраиваем запись (для iPhone выбираем mp4, для остальных webm)
+            let options = { mimeType: 'video/webm;codecs=vp9' };
+            if (!MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+                options = { mimeType: 'video/mp4' };
+            }
+
+            mediaRecorder = new MediaRecorder(stream, options);
+            audioChunks = []; // Будем собирать кусочки видео сюда
+            
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+            
+            mediaRecorder.onstop = () => {
+                const videoBlob = new Blob(audioChunks, { type: options.mimeType });
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    // Маркируем файл флагом isRoundVideo: true, чтобы чат понял, что это кружок
+                    attachedFile = { 
+                        name: options.mimeType.includes('mp4') ? "Circle.mp4" : "Circle.webm", 
+                        type: options.mimeType, 
+                        isRoundVideo: true, 
+                        data: reader.result 
+                    }; 
+                    actionSend(); 
+                };
+                reader.readAsDataURL(videoBlob);
+                
+                // Гарантированно тушим камеру и микрофон после записи
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.start();
+            isRecordingVideo = true;
+            
+            // Меняем внешний вид кнопки на стоп-квадратик
+            const btn = document.getElementById("videoBtn");
+            btn.style.background = "#dc3545"; btn.innerText = "⏹️";
+        }).catch(err => { alert("Не удалось включить камеру: " + err); });
+    }
+
+    function stopVideoRecord() {
+        if (mediaRecorder && isRecordingVideo) {
+            mediaRecorder.stop();
+            isRecordingVideo = false;
+            
+            // Прячем окошко камеры
+            document.getElementById("videoPreviewBox").style.display = "none";
+            
+            const btn = document.getElementById("videoBtn");
+            btn.style.background = "#2481cc"; btn.innerText = "📷";
+        }
     }
 
 </script>
