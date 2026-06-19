@@ -26,8 +26,20 @@
         
         .box { border: 1px solid rgba(255,255,255,0.08); padding: 8px; background: rgba(0, 0, 0, 0.12); border-radius: 18px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .msg { padding: 10px 14px; border-radius: 16px; max-width: 75%; font-size: 14px; word-wrap: break-word; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.1); animation: bubblePop 0.18s ease-out; }
-        .msg.my { background: #007bff; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .msg.other { background: rgba(255,255,255,0.2); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+         .msg.my { 
+            background: #007bff; 
+            color: white; 
+            align-self: flex-end; /* ИСПРАВЛЕНО: было flex-start, стало flex-end */
+            border-bottom-right-radius: 4px; /* ИСПРАВЛЕНО: хвостик теперь справа */
+        }
+        
+        /* Сообщения собеседника остаются слева */
+        .msg.other { 
+            background: rgba(255,255,255,0.2); 
+            color: white; 
+            align-self: flex-start; /* ИСПРАВЛЕНО: было flex-end, стало flex-start */
+            border-bottom-left-radius: 4px; /* ИСПРАВЛЕНО: хвостик теперь слева */
+        }
         .msg img { max-width: 100%; border-radius: 12px; margin-top: 4px; max-height: 200px; object-fit: cover; }
         
         .file-link { color: #4fc3f7; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 13px; }
