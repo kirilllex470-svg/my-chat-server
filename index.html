@@ -9,6 +9,59 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://onesignal.com" defer></script>
     <style>
+                /* Экран входящего/исходящего вызова */
+        .call-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(20, 15, 35, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 30000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 30px;
+        }
+        .call-avatar {
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #2481cc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 20px;
+            animation: pulseCall 1.5s infinite ease-in-out;
+        }
+        .call-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            color: white;
+            transition: transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .call-btn:active { transform: scale(0.9); }
+        .call-btn.accept { background: #28a745; }
+        .call-btn.decline { background: #dc3545; }
+
+        @keyframes pulseCall {
+            0% { box-shadow: 0 0 0 0 rgba(36, 129, 204, 0.5); }
+            70% { box-shadow: 0 0 0 20px rgba(36, 129, 204, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(36, 129, 204, 0); }
+        }
+
                 /* Стиль самого видео-кружка в истории чата */
         .video-msg {
             width: 200px;
@@ -182,9 +235,16 @@
         <button style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);" onclick="appRegister()">Зарегистрироваться</button>
     </div>
     <div id="boxMain" class="win">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px; height: 40px; flex-shrink: 0;">
-            <span style="font-size: 13px; font-weight: bold; color: rgba(255,255,255,0.5);">(МСБ55115) МЕССЕНДЖЕР</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px; height: 40px; flex-shrink: 0;">
+            <div style="font-size: 16px; font-weight: bold; color: #2481cc; cursor: pointer; padding: 4px 8px 4px 0;" onclick="backToMainSearch()">Назад</div>
+            <h4 style="margin: 0; font-size: 16px; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span id="chatTargetLabel">@чат</span></h4>
+            
+            <!-- Новая кнопка звонка -->
+            <div style="font-size: 20px; cursor: pointer; padding: 4px 8px; -webkit-tap-highlight-color: transparent;" onclick="actionStartCall()">📞</div>
+            
             <div class="logout-btn-header" onclick="appLogout()">Выйти 🚪</div>
+        </div>
+
         </div>
         <h4 id="lblUser" style="color: #4fc3f7; font-size:14px; text-align:left; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 10px;">Вы: ...</h4>
         <div id="adminPanel" class="admin-section">
@@ -264,6 +324,8 @@
     let voiceSeconds = 0, voiceTimerInterval = null;
     let selectedMsgId = null, selectedMsgData = null;
     let isRecordingVideo = false, videoStream = null;
+    let callCheckTimer = null;
+
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
     const msgSound = new Audio("https://google.com");
     
@@ -377,6 +439,18 @@
                 if (heartbeatTimer) clearInterval(heartbeatTimer);
                 heartbeatTimer = setInterval(() => { fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(Date.now()) }); }, 10000);
                 actionLoadMyContacts(); startGlobalMessageMonitoring();
+                globalMonitorTimer = setInterval(() => {
+    // [ВАШ СТАРЫЙ КОД ПРОВЕРКИ СООБЩЕНИЙ ТУТ...]
+    
+    // ПРОВЕРКА ВХОДЯЩЕГО ЗВОНКА (Добавьте эту строчку в конец интервала):
+    if (myAccount && document.getElementById("callOverlay").style.display !== "flex") {
+        fetch(URL_FB + "calls/" + myAccount + ".json").then(r => r.json()).then(call => {
+            if (call && call.status === "ringing" && (Date.now() - call.time < 30000)) {
+                openCallScreen(call.caller, "Входящий вызов...", true);
+            }
+        });
+    }
+}, 3000);
             } else { status.innerText = "Неверный логин или пароль!"; }
         }).catch(() => { status.innerText = "Ошибка сервера (нет связи)!"; });
     }
@@ -718,7 +792,90 @@
             btn.style.background = "#2481cc"; btn.innerText = "📷";
         }
     }
+    // НАЧАТЬ ЗВОНОК (Исходящий)
+    function actionStartCall() {
+        if (!chatWith) return;
+        
+        // Записываем в базу данных сервера сигнал о том, что мы звоним этому контакту
+        fetch(URL_FB + "calls/" + chatWith + ".json", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ caller: myAccount, status: "ringing", time: Date.now() })
+        }).then(() => {
+            openCallScreen(chatWith, "Исходящий вызов...", false);
+            
+            // Начинаем следить, ответит собеседник или сбросит
+            if (callCheckTimer) clearInterval(callCheckTimer);
+            callCheckTimer = setInterval(() => {
+                fetch(URL_FB + "calls/" + chatWith + ".json").then(r => r.json()).then(call => {
+                    if (!call || call.status === "declined") {
+                        alert("Звонок отклонен или завершен.");
+                        actionEndCall();
+                    } else if (call.status === "accepted") {
+                        document.getElementById("callStatusLabel").innerText = "Разговор...";
+                        clearInterval(callCheckTimer); // Связь установлена!
+                    }
+                });
+            }, 2000);
+        });
+    }
+
+    // ОТКРЫТЬ ЭКРАН ЗВОНКА ДЛЯ ПОЛЬЗОВАТЕЛЯ
+    function openCallScreen(user, statusText, isIncoming) {
+        document.getElementById("callUserLabel").innerText = "@" + user;
+        document.getElementById("callStatusLabel").innerText = statusText;
+        
+        const btnBox = document.getElementById("callActionButtons");
+        btnBox.innerHTML = ""; // Очищаем старые кнопки
+        
+        if (isIncoming) {
+            // Если звонок входящий — показываем две кнопки: Принять и Сбросить
+            btnBox.innerHTML = `
+                <button class="call-btn accept" onclick="actionAnswerCall('${user}')">📞</button>
+                <button class="call-btn decline" onclick="actionDeclineCall('${user}')">❌</button>
+            `;
+        } else {
+            // Если звонок исходящий — показываем только одну кнопку Сброса
+            btnBox.innerHTML = `
+                <button class="call-btn decline" style="width:140px; border-radius:14px; font-size:15px; font-weight:bold;" onclick="actionDeclineCall('${user}')">Сбросить</button>
+            `;
+        }
+        document.getElementById("callOverlay").style.display = "flex";
+    }
+
+    // ОТКЛОНИТЬ ИЛИ СБРОСИТЬ ВЫЗОВ
+    function actionDeclineCall(user) {
+        fetch(URL_FB + "calls/" + user + ".json", { method: "DELETE" }).then(() => {
+            // Также чистим ветку нашего аккаунта на всякий случай
+            fetch(URL_FB + "calls/" + myAccount + ".json", { method: "DELETE" });
+            actionEndCall();
+        });
+    }
+
+    function actionAnswerCall(user) {
+        fetch(URL_FB + "calls/" + myAccount + ".json", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "accepted" })
+        }).then(() => {
+            document.getElementById("callStatusLabel").innerText = "Соединение...";
+        });
+    }
+
+    function actionEndCall() {
+        if (callCheckTimer) clearInterval(callCheckTimer);
+        document.getElementById("callOverlay").style.display = "none";
+    }
 
 </script>
+        <div id="callOverlay" class="call-overlay">
+        <div class="call-avatar">👤</div>
+        <h2 id="callUserLabel" style="margin: 0 0 10px 0; font-size: 22px;">@user</h2>
+        <p id="callStatusLabel" style="margin: 0 0 40px 0; color: rgba(255,255,255,0.6); font-size: 16px;">Звонок...</p>
+        
+        <div style="display: flex; gap: 30px;" id="callActionButtons">
+            <!-- Кнопки управления появятся тут через JavaScript -->
+        </div>
+    </div>
 </body>
 </html>
