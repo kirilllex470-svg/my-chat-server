@@ -233,20 +233,25 @@
     // Новые переменные для поддержки WebRTC звонков
     let peerConnection = null, localStream = null, currentCallId = null, callCheckTimer = null, isCallActive = false;
 
-// Полностью очищенная и безопасная конфигурация STUN-серверов
+// Конфигурация с бесплатными публичными STUN и TURN серверами (логин/пароль openwebrtc)
 let rtcConfig = { 
     iceServers: [
         { urls: "stun:://google.com" },
-        { urls: "stun:://google.com" }
+        { urls: "stun:://google.com" },
+        {
+            urls: "turn:numb.viagenie.ca:3478",
+            username: "webrtc@live.com",
+            credential: "openwebrtc"
+        }
     ] 
 };
 
-// Защитная проверка: если браузер споткнется о настройки, мы переключимся на пустой массив
+// Защитная проверка инициализации парсера браузера
 try {
     new RTCPeerConnection(rtcConfig);
 } catch (e) {
-    console.warn("⚠️ Найдена ошибка парсинга ICE-серверов, применен аварийный режим:", e);
-    rtcConfig = { iceServers: [] }; // Локальные звонки в одной сети Wi-Fi все равно будут работать
+    console.warn("⚠️ Аварийный режим конфигурации ICE:", e);
+    rtcConfig = { iceServers: [{ urls: "stun:://google.com" }] };
 }
 
 
@@ -613,13 +618,20 @@ function trackCallStatus(callId) {
             localStream = stream; showCallUi(callId, chatWith, "outgoing");
             peerConnection = new RTCPeerConnection(rtcConfig);
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-            peerConnection.ontrack = (event) => { document.getElementById("remoteAudioPlayer").srcObject = event.streams[0]; };
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    const candId = "cand_" + Date.now() + Math.floor(Math.random()*100);
-                    fetch(URL_FB + "calls/" + callId + "/iceCandidates/" + candId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sender: myAccount, candidate: event.candidate, processed: false }) });
-                }
-            };
+peerConnection.ontrack = (event) => {
+    const audioPlayer = document.getElementById("remoteAudioPlayer");
+    if (event.streams && event.streams[0]) {
+        audioPlayer.srcObject = event.streams[0]; // Явно передаем первый медиа-поток комнатам
+        
+        // Принудительно запускаем воспроизведение звука, обходя блокировки автоплея браузера
+        audioPlayer.play().catch(err => {
+            console.log("Браузер заблокировал автоматический звук. Требуется клик.", err);
+            // Аварийный запуск звука при первом же тапе пользователя по экрану
+            document.body.addEventListener('click', () => { audioPlayer.play(); }, { once: true });
+        });
+    }
+};
+
             peerConnection.createOffer().then(offer => { return peerConnection.setLocalDescription(offer).then(() => offer); }).then(offer => {
                 const callPayload = { sender: myAccount, receiver: chatWith, status: "ringing", offer: offer, timestamp: Date.now() };
                 fetch(URL_FB + "calls/" + callId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(callPayload) });
@@ -637,13 +649,20 @@ function trackCallStatus(callId) {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
                 localStream = stream; peerConnection = new RTCPeerConnection(rtcConfig);
                 localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-                peerConnection.ontrack = (event) => { document.getElementById("remoteAudioPlayer").srcObject = event.streams[0]; };
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        const candId = "cand_" + Date.now() + Math.floor(Math.random()*100);
-                        fetch(URL_FB + "calls/" + currentCallId + "/iceCandidates/" + candId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sender: myAccount, candidate: event.candidate, processed: false }) });
-                    }
-                };
+peerConnection.ontrack = (event) => {
+    const audioPlayer = document.getElementById("remoteAudioPlayer");
+    if (event.streams && event.streams[0]) {
+        audioPlayer.srcObject = event.streams[0]; // Явно передаем первый медиа-поток комнатам
+        
+        // Принудительно запускаем воспроизведение звука, обходя блокировки автоплея браузера
+        audioPlayer.play().catch(err => {
+            console.log("Браузер заблокировал автоматический звук. Требуется клик.", err);
+            // Аварийный запуск звука при первом же тапе пользователя по экрану
+            document.body.addEventListener('click', () => { audioPlayer.play(); }, { once: true });
+        });
+    }
+};
+
                 peerConnection.setRemoteDescription(new RTCSessionDescription(call.offer)).then(() => { return peerConnection.createAnswer(); }).then(answer => { return peerConnection.setLocalDescription(answer).then(() => answer); }).then(answer => {
                     fetch(URL_FB + "calls/" + currentCallId + "/answer.json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(answer) });
                     fetch(URL_FB + "calls/" + currentCallId + "/status.json", { method: "PUT", body: JSON.stringify("accepted") });
