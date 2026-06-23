@@ -260,7 +260,7 @@
     
     // ПЕРЕМЕННЫЕ ДЛЯ WebRTC ЗВОНКОВ
     let peerConnection = null, localStream = null, currentCallId = null, callCheckTimer = null, isCallActive = false;
-      // НАДЕЖНАЯ КОНФИГУРАЦИЯ ICE ДЛЯ ЗВОНКОВ (ИСПРАВЛЕННАЯ)
+        // НАДЕЖНАЯ ИСПРАВЛЕННАЯ КОНФИГУРАЦИЯ ICE ДЛЯ ЗВОНКОВ
     let rtcConfig = { 
         iceServers: [
             { urls: "stun:://google.com" },
@@ -270,13 +270,42 @@
         ] 
     };
 
-    // ЗАЩИТНЫЙ БЛОК ИНИЦИАЛИЗАЦИИ RTCPeerConnection
+    // БЕЗОПАСНАЯ ИНИЦИАЛИЗАЦИЯ
     try {
-        new RTCPeerConnection(rtcConfig);
-        console.log("✅ Конфигурация WebRTC успешно инициализирована");
+        console.log("✅ Базовая конфигурация WebRTC готова");
     } catch (e) {
-        console.warn("⚠️ Критическая ошибка WebRTC:", e);
+        console.warn("⚠️ Предупреждение WebRTC:", e);
     }
+
+    const URL_FB = "https://onrender.com"; 
+    const msgSound = new Audio("https://google.com");
+
+    // ИНИЦИАЛИЗАЦИЯ И УПРАВЛЕНИЕ АНИМИРОВАННОЙ ЗАСТАВКОЙ
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            const splash = document.getElementById('splashScreen');
+            if (splash) {
+                splash.style.opacity = '0';
+                splash.style.transform = 'scale(1.1)';
+                setTimeout(() => splash.remove(), 600);
+            }
+        }, 3000); // Показ заставки ровно 3 секунды
+    });
+
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({ appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733", autoRegister: true, notifyButton: { enable: false }, workerPath: "OneSignalSDKWorker.js", registrationScope: "/" });
+        if (myAccount) { OneSignal.login(myAccount); }
+    });
+
+    function toggleEmojiTray(event) { event.stopPropagation(); document.getElementById("emojiPopTray").classList.toggle("open"); }
+    
+    document.addEventListener("click", function() { 
+        const tray = document.getElementById("emojiPopTray");
+        const menu = document.getElementById("msgContextMenu");
+        if (tray) tray.classList.remove("open"); 
+        if (menu) menu.style.display = "none";
+    });
 
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
     const msgSound = new Audio("https://google.com");
@@ -597,11 +626,9 @@ function initiateVoiceCall() {
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         localStream = stream; showCallUi(callId, chatWith, "outgoing");
         
-        // Гарантированно чистая конфигурация без TURN-ошибок
-        const cleanConfig = { iceServers: [{ urls: "stun:://google.com" }, { urls: "stun:://google.com" }] };
-        peerConnection = new RTCPeerConnection(cleanConfig);
-        
+        peerConnection = new RTCPeerConnection(rtcConfig);
         localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+        
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
                 const cId = "cand_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
@@ -631,12 +658,9 @@ function acceptIncomingCall() {
         if (!call) { endCurrentCall(); return; }
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
             localStream = stream;
-            
-            // Гарантированно чистая конфигурация без TURN-ошибок
-            const cleanConfig = { iceServers: [{ urls: "stun:://google.com" }, { urls: "stun:://google.com" }] };
-            peerConnection = new RTCPeerConnection(cleanConfig);
-            
+            peerConnection = new RTCPeerConnection(rtcConfig);
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
                     const cId = "cand_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
