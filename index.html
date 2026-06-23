@@ -232,7 +232,13 @@
     
     // Новые переменные для поддержки WebRTC звонков
     let peerConnection = null, localStream = null, currentCallId = null, callCheckTimer = null, isCallActive = false;
-    const rtcConfig = { iceServers: [{ urls: "stun:://google.com" }, { urls: "stun:://google.com" }] };
+    const rtcConfig = {
+    iceServers: [
+        { urls: "stun:://google.com" },
+        { urls: "stun:://google.com" }
+    ]
+};
+
 
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
     const msgSound = new Audio("https://google.com");
