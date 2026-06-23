@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://onesignal.com" defer></script>
     <style>
-                /* Стиль самого видео-кружка в истории чата */
+        /* Стиль самого видео-кружка в истории чата */
         .video-msg {
             width: 200px;
             height: 200px;
@@ -23,7 +23,7 @@
         .video-msg video {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Обрезает видео строго в круг, убирая черные поля */
+            object-fit: cover;
         }
 
         /* Окошко предпросмотра камеры над клавиатурой во время записи */
@@ -45,11 +45,12 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scaleX(-1); /* Зеркалит камеру, чтобы было удобно смотреть на себя */
+            transform: scaleX(-1);
         }
+
         /* Фирменный фоновый узор МСБ55115 с узорами и иконками чата */
         #areaMessages {
-            background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTgwIDE4MCI+CjxzdHlsZT4KLnR4dCB7IGZpbGw6IHJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSk7IGZvbnQtZmFtaWx5OiBzYW5zLXNlcmlmOyBmb250LXdlaWdodDogYm9sZDsgZm9udC1zaXplOiAxM3B4OyB9Ci5pY28geyBmaWxsOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDQpOyBmb250LWZhbWlseTogc2Fucy1zZXJpZjsgZm9udC1zaXplOiAxNnB4OyB9Cjwvc3R5bGU+CjxnIHRyYW5zZm9ybT0icm90YXRlKC0yMCA5MCA5MCkiPgo8dGV4dCB4PSI0NSIgeT0iOTUiIGNsYXNzPSJ0eHQiPiYjMTA1MjsmIzEwNTc7JiMxMDQxOzU1MTE1PC90ZXh0Pgo8dGV4dCB4PSIyMCIgeT0iNDAiIGNsYXNzPSJpY28iPiYjOTk5Mjs8L3RleHQ+Cjx0ZXh0IHg9IjE0MCIgeT0iNDAiIGNsYXNzPSJpY28iPiYjOTcyOTs8L3RleHQ+Cjx0ZXh0IHg9IjIwIiB5PSIxNTAiIGNsYXNzPSJpY28iPiYjMTI4MTcyOzwvdGV4dD4KPHRleHQgeD0iMTQwIiB5PSIxNTAiIGNsYXNzPSJpY28iPiYjMTAwMjQ7PC90ZXh0Pgo8L2c+Cjwvc3ZnPg==") !important;
+            background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTgwIDE4MCI+CjxzdHlsZT4KLnR4dCB7IGZpbGw6IHJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSk7IGZvbnQtZmFtaWx5OiBzYW5zLXNlcmlmOyBmb250LXdlaWdodDogYm9sZDsgZm9udC1zaXplOiAxM3B4OyB9Ci5pY28geyBmaWxsOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDQpOyBmb250LWZhbWlseTogc2Fucy1zZXJpZjsgZm9udC1zaXplOiAxNnB4OyB9Cjwvc3R5bGU+CjxnIHRyYW5zZm9ybT0icm90YXRlKC0yMCA5MCA5MCkiPgo8dGV4dCB4PSI0NSIgeT0iOTUiIGNsYXNzPSJ0eHQiPiYjMTA1MjsmIzEwNTc7JiMxMDQxOzU1MTE1PC90ZXh0Pgo8dGV4dCB4PSIyMCIgeT0iNDAiIGNsYXNzPSpY28iPiYjOTk5Mjs8L3RleHQ+Cjx0ZXh0IHg9IjE0MCIgeT0iNDAiIGNsYXNzPSpY28iPiYjOTcyOTs8L3RleHQ+Cjx0ZXh0IHg9IjIwIiB5PSIxNTAiIGNsYXNzPSpY28iPiYjMTI4MTcyOzwvdGV4dD4KPHRleHQgeD0iMTQwIiB5PSIxNTAiIGNsYXNzPSpY28iPiYjMTAwMjQ7PC90ZXh0Pgo8L2c+Cjwvc3ZnPg==") !important;
             background-repeat: repeat !important;
             background-color: rgba(0, 0, 0, 0.15) !important;
             border-radius: 18px;
@@ -65,7 +66,6 @@
         
         .win { background: rgba(20, 20, 35, 0.45); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 16px; width: 100%; max-width: 480px; height: 100dvh; display: none; flex-direction: column; box-sizing: border-box; will-change: transform, opacity; }
         .active { display: flex; animation: slideInRight 0.28s cubic-bezier(0.32, 0.94, 0.6, 1) forwards; }
-        
         h3, h4 { margin: 0 0 12px 0; font-weight: 600; text-align: center; font-size: 16px; }
         input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); border-radius: 14px; font-size: 16px; box-sizing: border-box; color: #fff; outline: none; -webkit-appearance: none; }
         button { width: 100%; color: white; border: none; padding: 14px; font-size: 15px; border-radius: 14px; cursor: pointer; font-weight: bold; margin-bottom: 8px; transition: opacity 0.1s; -webkit-tap-highlight-color: transparent; }
@@ -73,19 +73,18 @@
         
         .box { border: 1px solid rgba(255,255,255,0.08); padding: 8px; background: rgba(0, 0, 0, 0.12); border-radius: 18px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .msg { padding: 10px 14px; border-radius: 16px; max-width: 75%; font-size: 14px; word-wrap: break-word; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.1); animation: bubblePop 0.18s ease-out; }
-         .msg.my { 
+        .msg.my { 
             background: #007bff; 
             color: white; 
-            align-self: flex-end; /* ИСПРАВЛЕНО: было flex-start, стало flex-end */
-            border-bottom-right-radius: 4px; /* ИСПРАВЛЕНО: хвостик теперь справа */
+            align-self: flex-end; 
+            border-bottom-right-radius: 4px; 
         }
         
-        /* Сообщения собеседника остаются слева */
         .msg.other { 
             background: rgba(255,255,255,0.2); 
             color: white; 
-            align-self: flex-start; /* ИСПРАВЛЕНО: было flex-end, стало flex-start */
-            border-bottom-left-radius: 4px; /* ИСПРАВЛЕНО: хвостик теперь слева */
+            align-self: flex-start; 
+            border-bottom-left-radius: 4px; 
         }
         .msg img { max-width: 100%; border-radius: 12px; margin-top: 4px; max-height: 200px; object-fit: cover; }
         
@@ -96,6 +95,7 @@
         .voice-msg audio { max-width: 100%; height: 28px; outline: none; }
         .logout-btn-header { background: rgba(255, 77, 77, 0.2); border: 1px solid rgba(255, 77, 77, 0.3); color: #ff8585; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; width: auto; margin: 0; }
         .logout-btn-header:active { background: rgba(255, 77, 77, 0.4); }
+
         .swipe-container { position: relative; width: 100%; overflow: hidden; border-radius: 14px; background: rgba(255, 255, 255, 0.03); height: 50px; margin-bottom: 4px; flex-shrink: 0; }
         .row { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; background: rgba(255,255,255,0.05); border-radius: 14px; font-size: 15px; cursor: pointer; box-sizing: border-box; transition: transform 0.2s ease; will-change: transform; z-index: 2; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
         .swipe-btn { position: absolute; right: 0; top: 0; height: 100%; width: 80px; background: #dc3545; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; z-index: 1; cursor: pointer; border-radius: 0 14px 14px 0; letter-spacing: 0.5px; }
@@ -108,29 +108,8 @@
         .tg-field { flex: 1; background: transparent; border: none; outline: none; padding: 8px 2px; font-size: 15px; color: #fff; max-height: 36px; resize: none; font-family: inherit; box-sizing: border-box; min-width: 0; }
         .tg-icon-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
         .tg-icon-btn:active { background: rgba(255,255,255,0.1); }
-                .tg-send-btn { 
-            width: 36px; 
-            height: 36px; 
-            background: #2481cc; 
-            color: white; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer; 
-            border-radius: 50%; 
-            border: none; 
-            outline: none; 
-            margin-left: 6px; 
-            flex-shrink: 0; 
-            -webkit-tap-highlight-color: transparent; 
-            transition: background 0.15s, transform 0.1s;
-        }
-        .tg-send-btn:active { 
-            background: #1c6aa8; 
-            transform: scale(0.92); 
-        }
-
-        .tg-send-btn:active { background: #1c6aa8; transform: scale(0.96); }
+        .tg-send-btn { width: 36px; height: 36px; background: #2481cc; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; border: none; outline: none; margin-left: 6px; flex-shrink: 0; -webkit-tap-highlight-color: transparent; transition: background 0.15s, transform 0.1s; }
+        .tg-send-btn:active { background: #1c6aa8; transform: scale(0.92); }
         .tg-emoji-pop { position: absolute; bottom: 60px; left: 0; width: 100%; background: rgba(25, 20, 35, 0.96); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; box-shadow: 0 -8px 24px rgba(0,0,0,0.3); display: none; padding: 12px; box-sizing: border-box; grid-template-columns: repeat(5, 1fr); gap: 10px; z-index: 1000; justify-items: center; font-size: 24px; }
         .tg-emoji-pop.open { display: grid; }
         .wave-bar { width: 4px; height: 8px; background-color: #28a745; border-radius: 2px; animation: soundWave 0.6s ease-in-out infinite alternate; }
@@ -145,25 +124,8 @@
         .msg-context-item.del-action { color: #ff6b6b; }
         .forward-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 20000; display: none; justify-content: center; align-items: center; }
         .forward-modal { background: #251643; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; width: 90%; max-width: 360px; max-height: 70dvh; display: flex; flex-direction: column; padding: 16px; box-sizing: border-box; }
-                /* Красивый фоновый узор с надписью МСБ55115 */
-        #areaMessages {
-            background-color: transparent !important;
-            position: relative;
-        }
-        
-        #areaMessages::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: -1;
-            opacity: 0.04; /* Делает текст очень бледным, чтобы он не мешал читать переписку */
-            pointer-events: none;
-            
-            /* Создаем бесконечно повторяющийся текстовый узор */
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='160' height='100' viewBox='0 0 160 100'><text x='20' y='50' fill='%23ffffff' font-family='sans-serif' font-weight='bold' font-size='12' transform='rotate(-25 80 50)'>МСБ55115</text></svg>");
-            background-repeat: repeat;
-        }
-
+        #areaMessages { background-color: transparent !important; position: relative; }
+        #areaMessages::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: -1; opacity: 0.04; pointer-events: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='160' height='100' viewBox='0 0 160 100'><text x='20' y='50' fill='%23ffffff' font-family='sans-serif' font-weight='bold' font-size='12' transform='rotate(-25 80 50)'>МСБ55115</text></svg>"); background-repeat: repeat; }
     </style>
 </head>
 <body>
@@ -201,50 +163,43 @@
     <div id="boxChatRoom" class="win" style="padding: 12px 14px 16px 14px;">
         <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px; height: 40px; flex-shrink: 0;">
             <div style="font-size: 16px; font-weight: bold; color: #2481cc; cursor: pointer; padding: 4px 8px 4px 0;" onclick="backToMainSearch()">⬅ Назад</div>
-            <h4 style="margin: 0; font-size: 16px; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span id="chatTargetLabel">@чат</span></h4>
-            <div class="logout-btn-header" onclick="appLogout()">Выйти 🚪</div>
+            <h4 style="margin: 0; font-size: 16px; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px;">
+                <span id="chatTargetLabel">@чат</span>
+            </h4>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button id="callUiBtn" style="background: #28a745; width: 36px; height: 36px; padding: 0; margin: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; border: none;" onclick="initiateVoiceCall()">📞</button>
+                <div class="logout-btn-header" onclick="appLogout()">Выйти 🚪</div>
+            </div>
         </div>
         <div class="box" id="areaMessages" style="flex: 1; margin-bottom: 10px; background: transparent; border: none; padding: 4px 0;">Загрузка истории...</div>
-        
         <div style="position: relative; width: 100%; display: flex; align-items: center; flex-shrink: 0; margin-top: auto; gap: 4px; box-sizing: border-box;">
             <div id="emojiPopTray" class="tg-emoji-pop">
                 <span class="tg-icon-btn" onclick="addEmoji('😀')">😀</span><span class="tg-icon-btn" onclick="addEmoji('😂')">😂</span><span class="tg-icon-btn" onclick="addEmoji('👍')">👍</span><span class="tg-icon-btn" onclick="addEmoji('❤️')">❤️</span>
                 <span class="tg-icon-btn" onclick="addEmoji('🔥')">🔥</span><span class="tg-icon-btn" onclick="addEmoji('🎉')">🎉</span><span class="tg-icon-btn" onclick="addEmoji('😮')">😮</span><span class="tg-icon-btn" onclick="addEmoji('😢')">😢</span>
                 <span class="tg-icon-btn" onclick="addEmoji('🚀')">🚀</span><span class="tg-icon-btn" onclick="addEmoji('👀')">👀</span>
             </div>
-                            <!-- Круглое окошко предпросмотра камеры перед глазами -->
-                <div id="videoPreviewBox" class="video-preview-holder">
-                    <video id="videoPreview" autoplay muted playsinline></video>
-                </div>
-
+            <div id="videoPreviewBox" class="video-preview-holder">
+                <video id="videoPreview" autoplay muted playsinline></video>
+            </div>
             <div class="tg-input-bar">
                 <label class="tg-icon-btn" id="fileClipBtn" style="margin:0; width: 28px; height: 28px; font-size: 16px; user-select:none; -webkit-user-select:none;">📎
                     <input type="file" id="fileInp" style="display:none;" onchange="handleFileSelect(this)">
                 </label>
                 <div id="voiceWave" style="display: none; position: absolute; left: 36px; right: 36px; top: 0; bottom: 0; background: #1e1135; align-items: center; justify-content: center; gap: 4px; border-radius: 14px; z-index: 5;">
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
                     <span id="voiceTimer" style="color: #28a745; font-size: 14px; font-weight: bold; margin-left: 8px; font-family: monospace;">00:00</span>
                 </div>
                 <textarea id="textInp" class="tg-field" rows="1" placeholder="Cообщение..." onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault();actionSend();}"></textarea>
                 <div class="tg-icon-btn" style="width: 28px; height: 28px; font-size: 16px;" onclick="toggleEmojiTray(event)">😀</div>
             </div>
-            <!-- Кнопка камеры для записи кружков -->
             <button id="videoBtn" class="tg-send-btn" style="background: #2481cc; margin-left: 0; width: 36px; height: 36px; font-size: 15px;" onclick="toggleVideoRecord()">📷</button>
-            <!-- Кнопка микрофона (Зеленая) -->
             <button id="voiceBtn" class="tg-send-btn" style="background: #28a745; margin-left: 0; width: 36px; height: 36px; font-size: 15px;" onclick="toggleVoiceRecord()">🎙️</button>
-             <!-- СТРОГО ОДНА КНОПКА ОТПРАВКИ (Синяя с самолетиком) -->
             <button class="tg-send-btn" style="margin-left: 0; width: 36px; height: 36px; padding: 0;" onclick="actionSend()">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="transform: rotate(0deg); display: block; margin: 0 auto;">
                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                 </svg>
             </button>
         </div>
-    </div>
-    </div>
     </div>
     <div id="msgContextMenu" class="msg-context-menu">
         <div class="msg-context-item" onclick="triggerForwardMode()">🔄 Переслать</div>
@@ -257,6 +212,16 @@
             <button style="background: rgba(255,255,255,0.1); margin-top: 12px; margin-bottom: 0;" onclick="closeForwardModal()">Отмена</button>
         </div>
     </div>
+    <div id="callOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 10, 25, 0.95); backdrop-filter: blur(20px); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; padding: 20px;">
+        <div style="width: 110px; height: 110px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 20px; box-shadow: 0 0 30px rgba(36, 129, 204, 0.3); animation: bubblePop 0.3s ease-out;">📞</div>
+        <h2 id="callScreenTitle" style="margin: 0 0 8px 0; font-size: 22px; font-weight: bold; text-align: center;">Голосовой звонок</h2>
+        <p id="callScreenStatus" style="margin: 0 0 40px 0; font-size: 15px; color: rgba(255,255,255,0.6); text-align: center;">Соединение...</p>
+        <div style="display: flex; gap: 20px; width: 100%; max-width: 280px;">
+            <button id="declineCallBtn" style="background: #dc3545; height: 54px; border-radius: 27px; margin: 0; font-weight: bold; font-size: 16px;" onclick="endCurrentCall()">Сбросить 🛑</button>
+            <button id="acceptCallBtn" style="background: #28a745; height: 54px; border-radius: 27px; margin: 0; font-weight: bold; font-size: 16px; display: none;" onclick="acceptIncomingCall()">Ответить 🎉</button>
+        </div>
+        <audio id="remoteAudioPlayer" autoplay playsinline style="display:none;"></audio>
+    </div>
 <script>
     let myAccount = "", myID = "", chatWith = "", chatTimer = null, globalMonitorTimer = null, heartbeatTimer = null;
     let attachedFile = null; let totalMessagesCount = {}; let isFirstLoadForRoom = {}; let globalKnownMessages = {};
@@ -264,14 +229,20 @@
     let voiceSeconds = 0, voiceTimerInterval = null;
     let selectedMsgId = null, selectedMsgData = null;
     let isRecordingVideo = false, videoStream = null;
+    
+    // Новые переменные для поддержки WebRTC звонков
+    let peerConnection = null, localStream = null, currentCallId = null, callCheckTimer = null, isCallActive = false;
+    const rtcConfig = { iceServers: [{ urls: "stun:://google.com" }, { urls: "stun:://google.com" }] };
+
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
     const msgSound = new Audio("https://google.com");
-    
+
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({ appId: "a11bd4a6-a783-421e-b975-01f2f1b8a733", autoRegister: true, notifyButton: { enable: false }, workerPath: "OneSignalSDKWorker.js", registrationScope: "/" });
         if (myAccount) { OneSignal.login(myAccount); }
     });
+
     function toggleEmojiTray(event) { event.stopPropagation(); document.getElementById("emojiPopTray").classList.toggle("open"); }
     document.addEventListener("click", function() { 
         document.getElementById("emojiPopTray").classList.remove("open"); 
@@ -288,29 +259,32 @@
     }
     function closeInAppAlert() { document.getElementById("inAppNotification").classList.remove("show"); }
     function addEmoji(emoji) { const input = document.getElementById("textInp"); input.value += emoji; input.focus(); }
+    
     function handleFileSelect(input) {
         const files = input.files; if (!files || files.length === 0) return;
-        const file = files[0]; // ИСПРАВЛЕНО: добавили строго первый элемент массива [0]
+        const file = files[0];
         if (file.size > 2 * 1024 * 1024) { alert("Файл слишком большой! Максимум 2 МБ."); input.value = ""; return; }
         const reader = new FileReader();
         reader.onload = function(e) { attachedFile = { name: file.name, type: file.type, data: e.target.result }; const clip = document.getElementById("fileClipBtn"); clip.style.background = "rgba(40, 167, 69, 0.3)"; clip.innerText = "✅"; };
         reader.readAsDataURL(file);
     }
-
     function actionSend() {
         const text = document.getElementById("textInp").value.trim(); 
-        
-        // ИСПРАВЛЕНО: жесткая мобильная проверка вложений
         let hasFile = (attachedFile && attachedFile.data) ? true : false;
         if (!text && !hasFile) return; 
         if (!chatWith) return;
         
-        const room = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now(); const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; if (hasFile) bodyMsg.file = attachedFile;
+        const room = [myAccount, chatWith].sort().join("_"); 
+        const msgId = "msg_" + Date.now(); 
+        const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; 
+        if (hasFile) bodyMsg.file = attachedFile;
+        
         fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => {
             fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": `Новое от ${myAccount}` }, contents: { "en": text ? text : (attachedFile && attachedFile.voice ? "Голосовое сообщение" : "Файл") } }) }).catch(() => {});
             document.getElementById("textInp").value = ""; attachedFile = null; const clip = document.getElementById("fileClipBtn"); clip.style.background = "transparent"; clip.innerHTML = "📎<input type='file' id='fileInp' style='display:none;' onchange='handleFileSelect(this)'>"; loadMessages();
         });
     }
+
     function toggleVoiceRecord() { if (!isRecordingVoice) { startVoiceRecord(); } else { stopVoiceRecord(); } }
     
     function startVoiceRecord() {
@@ -376,7 +350,7 @@
                 if (myAccount === "admin") { document.getElementById("adminPanel").style.display = "block"; loadAdminUsersList(); }
                 if (heartbeatTimer) clearInterval(heartbeatTimer);
                 heartbeatTimer = setInterval(() => { fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(Date.now()) }); }, 10000);
-                actionLoadMyContacts(); startGlobalMessageMonitoring();
+                actionLoadMyContacts(); startGlobalMessageMonitoring(); startCallMonitoring();
             } else { status.innerText = "Неверный логин или пароль!"; }
         }).catch(() => { status.innerText = "Ошибка сервера (нет связи)!"; });
     }
@@ -386,6 +360,7 @@
         if (chatTimer) clearInterval(chatTimer);
         if (globalMonitorTimer) clearInterval(globalMonitorTimer);
         if (heartbeatTimer) clearInterval(heartbeatTimer);
+        if (callCheckTimer) clearInterval(callCheckTimer);
         fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(0) })
         .then(() => {
             if (chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); }
@@ -397,7 +372,6 @@
             setTimeout(() => { document.getElementById("boxAuth").classList.add("active"); }, 50);
         });
     }
-    
     function startGlobalMessageMonitoring() {
         if (globalMonitorTimer) clearInterval(globalMonitorTimer);
         fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => {
@@ -420,6 +394,7 @@
             });
         }, 3000);
     }
+
     function loadAdminUsersList() {
         fetch(URL_FB + "users.json").then(r => r.json()).then(data => {
             const container = document.getElementById("adminUsersList"); container.innerHTML = ""; if (!data) return;
@@ -444,48 +419,29 @@
             } else { alert("Пользователь с таким ID не зарегистрирован в системе!"); }
         });
     }
-
     function actionLoadMyContacts() {
         fetch(URL_FB + "contacts/" + myAccount + ".json").then(r => r.json()).then(contactsData => {
             const area = document.getElementById("areaUsers"); area.innerHTML = contactsData ? "" : "Список пуст. Найдите кого-нибудь по ID выше!"; if (!contactsData) return;
             fetch(URL_FB + "users.json").then(r => r.json()).then(globalUsers => {
                 Object.keys(contactsData).forEach(log => {
                     if (!contactsData[log]) return;
-                    
-                    // Создаем чистый контейнер строки
                     const container = document.createElement("div"); 
                     container.style.cssText = "display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); margin-bottom: 8px; padding: 10px 14px; border-radius: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent;";
-                    
                     let presenceStatus = "<span style='color:rgba(255,255,255,0.4); font-size:12px;'>офлайн</span>";
                     if (globalUsers && globalUsers[log] && globalUsers[log].lastSeen) {
                         let timeDiff = Date.now() - globalUsers[log].lastSeen;
                         if (timeDiff < 25000) { presenceStatus = "<span style='color:#28a745; font-size:12px; font-weight:bold;'>• в сети</span>"; } 
                         else { let lastDate = new Date(globalUsers[log].lastSeen); presenceStatus = `<span style='color:rgba(255,255,255,0.4); font-size:11px;'>был(а) ${String(lastDate.getHours()).padStart(2,'0')}:${String(lastDate.getMinutes()).padStart(2,'0')}</span>`; }
                     }
-                    
-                    // Левая часть: информация о контакте
                     const infoBlock = document.createElement("div");
                     infoBlock.style.cssText = "display: flex; flex-direction: column; gap: 2px; flex: 1;";
                     infoBlock.innerHTML = `<span>👤 <b>@${log}</b> <span style="font-size:11px; opacity:0.5;">(ID: ${contactsData[log].id})</span></span>${presenceStatus}`;
-                    
-                    // Клик на информацию открывает переписку
                     infoBlock.onclick = () => { startPersonalChat(log); };
-                    
-                    // Правая часть: кнопка удаления
                     const delBtn = document.createElement("button");
                     delBtn.innerText = "❌";
                     delBtn.style.cssText = "background: rgba(255, 77, 77, 0.15); border: 1px solid rgba(255, 77, 77, 0.3); color: #ff8585; width: 36px; height: 36px; padding: 0; margin: 0; border-radius: 10px; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 10;";
-                    
-                    // ИСПРАВЛЕНО: Оставили только один метод onclick, который блокирует проваливание клика и повторный вызов функции
-                    delBtn.onclick = (e) => {
-                        e.stopPropagation(); // Не дает запустить открытие чата
-                        e.preventDefault();  // Защищает от ложных тапов на мобильных
-                        actionDelContact(log);
-                    };
-                    
-                    container.appendChild(infoBlock);
-                    container.appendChild(delBtn);
-                    area.appendChild(container);
+                    delBtn.onclick = (e) => { e.stopPropagation(); e.preventDefault(); actionDelContact(log); };
+                    container.appendChild(infoBlock); container.appendChild(delBtn); area.appendChild(container);
                 });
             });
         });
@@ -497,228 +453,157 @@
         loadMessages(); if (chatTimer) clearInterval(chatTimer);
         chatTimer = setInterval(loadMessages, 3000);
     }
-
     function backToMainSearch() {
         chatWith = ""; if (chatTimer) clearInterval(chatTimer);
         document.getElementById("boxChatRoom").classList.remove("active");
         setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50);
         actionLoadMyContacts();
     }
-
-        function loadMessages() {
+    function loadMessages() {
         if (!chatWith) return; const room = [myAccount, chatWith].sort().join("_");
         fetch(URL_FB + "messages/" + room + ".json").then(r => r.json()).then(data => {
             const area = document.getElementById("areaMessages"); if (!data) { area.innerHTML = "Нет сообщений."; return; }
             const msgKeys = Object.keys(data);
             const currentCount = area.querySelectorAll('.msg').length;
-            if (msgKeys.length === currentCount) return; 
-
-            area.innerHTML = ""; 
+            if (msgKeys.length === currentCount) return;
+            area.innerHTML = "";
             msgKeys.forEach(msgId => {
                 const msg = data[msgId]; if (!msg) return;
                 const r = document.createElement("div"); r.className = msg.sender === myAccount ? "msg my" : "msg other";
-                
-                // 1. Шапка для пересланного сообщения
                 let forwardHeader = "";
-                if (msg.forwardedFrom) {
-                    forwardHeader = `<div style="font-size: 11px; opacity: 0.6; font-style: italic; margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1px solid rgba(255,255,255,0.1);">↪ Переслано от @${msg.forwardedFrom}</div>`;
-                }
-
-                // 2. Получаем точное время (Часы:Минуты)
+                if (msg.forwardedFrom) { forwardHeader = `<div style="font-size: 11px; opacity: 0.6; font-style: italic; margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1px solid rgba(255,255,255,0.1);">↪ Переслано от @${msg.forwardedFrom}</div>`; }
                 let timeStr = "";
-                if (msg.time) {
-                    const d = new Date(msg.time);
-                    timeStr = String(d.getHours()).padStart(2, '0') + ":" + String(d.getMinutes()).padStart(2, '0');
-                }
-
-                // ВОТ ЭТО МЕСТО, КУДА МЫ ВСТАВИЛИ ПРОВЕРКУ ВИДЕО-КРУЖКА:
+                if (msg.time) { const d = new Date(msg.time); timeStr = String(d.getHours()).padStart(2, '0') + ":" + String(d.getMinutes()).padStart(2, '0'); }
                 let html = forwardHeader; 
-                
-                if (msg.file && msg.file.isRoundVideo) { 
-                    // Круглый видеоплеер (звук включается/выключается по нажатию на кружок)
-                    html += `<div class="video-msg"><video src="${msg.file.data}" loop autoplay muted playsinline onclick="this.muted = !this.muted;"></video></div>`; 
-                } 
-                else if (msg.file && msg.file.voice) {  
-                    html += `<div class="voice-msg"><audio src="${msg.file.data}" controls preload="auto" style="width:100%; max-width:240px; height:32px;"></audio></div>`; 
-                }
-                else if (msg.file && msg.file.type && msg.file.type.startsWith("image/")) { 
-                    html += `<img src="${msg.file.data}">`; 
-                } 
-                else if (msg.file) { 
-                    html += `<a href="${msg.file.data}" download="${msg.file.name}" class="file-link">📎 ${msg.file.name}</a>`; 
-                } 
-                else if (msg.text) { 
-                    html += `<div>${msg.text}</div>`; 
-                }
-                
-                // Добавляем время отправки в самый низ облачка
-                if (timeStr) {
-                    html += `<div class="msg-meta">${timeStr}</div>`;
-                }
-                
+                if (msg.file && msg.file.isRoundVideo) { html += `<div class="video-msg"><video src="${msg.file.data}" loop autoplay muted playsinline onclick="this.muted = !this.muted;"></video></div>`; } 
+                else if (msg.file && msg.file.voice) { html += `<div class="voice-msg"><audio src="${msg.file.data}" controls preload="auto" style="width:100%; max-width:240px; height:32px;"></audio></div>`; }
+                else if (msg.file && msg.file.type && msg.file.type.startsWith("image/")) { html += `<img src="${msg.file.data}">`; } 
+                else if (msg.file) { html += `<a href="${msg.file.data}" download="${msg.file.name}" class="file-link">📎 ${msg.file.name}</a>`; } 
+                else if (msg.text) { html += `<div>${msg.text}</div>`; }
+                if (timeStr) { html += `<div style="font-size:10px; opacity:0.4; text-align:right; margin-top:4px;">${timeStr}</div>`; }
                 r.innerHTML = html;
-
-                // Слушатели долгих тапов для удаления и пересылки
                 let pressTimer;
-                r.addEventListener('touchstart', (e) => {
-                    pressTimer = setTimeout(() => {
-                        e.preventDefault();
-                        openMessageMenu(e.touches.clientX, e.touches.clientY, msgId, msg);
-                    }, 600);
-                }, { passive: false });
-                r.addEventListener('touchend', () => clearTimeout(pressTimer));
-                r.addEventListener('touchmove', () => clearTimeout(pressTimer));
+                r.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => { e.preventDefault(); openMessageMenu(e.touches[0].clientX, e.touches[0].clientY, msgId, msg); }, 600); }, { passive: false });
+                r.addEventListener('touchend', () => clearTimeout(pressTimer)); r.addEventListener('touchmove', () => clearTimeout(pressTimer));
                 r.addEventListener('contextmenu', (e) => { e.preventDefault(); openMessageMenu(e.clientX, e.clientY, msgId, msg); });
-
                 area.appendChild(r);
             });
             area.scrollTop = area.scrollHeight;
         });
     }
-
-    function openMessageMenu(x, y, msgId, msgData) {
-        selectedMsgId = msgId;
-        selectedMsgData = msgData; // Здесь автоматически сохраняется и msgData.sender
-        const menu = document.getElementById("msgContextMenu"); 
-        const delBtn = document.getElementById("ctxDelBtn");
-        
-        if (msgData.sender === myAccount) { delBtn.style.display = "flex"; } else { delBtn.style.display = "none"; }
-        
-        menu.style.left = Math.min(x, window.innerWidth - 160) + "px";
-        menu.style.top = Math.min(y, window.innerHeight - 100) + "px";
-        menu.style.display = "flex";
-    }
-
-    function triggerDeleteMessage() {
-        if (!selectedMsgId || !chatWith) return; if (!confirm("Удалить это сообщение для всех?")) return;
-        const room = [myAccount, chatWith].sort().join("_");
-        fetch(URL_FB + "messages/" + room + "/" + selectedMsgId + ".json", { method: "DELETE" }).then(() => {
-            document.getElementById("msgContextMenu").style.display = "none"; loadMessages();
-        });
-    }
-
-    function triggerForwardMode() {
-        document.getElementById("msgContextMenu").style.display = "none";
-        const overlay = document.getElementById("forwardOverlay"); overlay.style.display = "flex";
-        fetch(URL_FB + "contacts/" + myAccount + ".json").then(r => r.json()).then(contactsData => {
-            const container = document.getElementById("forwardContactsList"); container.innerHTML = "";
-            if (!contactsData) { container.innerHTML = "У вас нет диалогов для пересылки."; return; }
-            Object.keys(contactsData).forEach(log => {
-                if (!contactsData[log]) return;
-                const div = document.createElement("div"); div.className = "msg-context-item"; div.style.background = "rgba(255,255,255,0.05)"; div.style.marginBottom = "4px";
-                div.innerHTML = `<span>👤 <b>@${log}</b></span>`; div.onclick = () => executeForwardMessage(log); container.appendChild(div);
-            });
-        });
-    }
-
+    function openMessageMenu(x, y, msgId, msgData) { selectedMsgId = msgId; selectedMsgData = msgData; const menu = document.getElementById("msgContextMenu"); const delBtn = document.getElementById("ctxDelBtn"); if (msgData.sender === myAccount) { delBtn.style.display = "flex"; } else { delBtn.style.display = "none"; } menu.style.left = Math.min(x, window.innerWidth - 160) + "px"; menu.style.top = Math.min(y, window.innerHeight - 100) + "px"; menu.style.display = "flex"; }
+    function triggerDeleteMessage() { if (!selectedMsgId || !chatWith) return; if (!confirm("Удалить это сообщение для всех?")) return; const room = [myAccount, chatWith].sort().join("_"); fetch(URL_FB + "messages/" + room + "/" + selectedMsgId + ".json", { method: "DELETE" }).then(() => { document.getElementById("msgContextMenu").style.display = "none"; loadMessages(); }); }
+    function triggerForwardMode() { document.getElementById("msgContextMenu").style.display = "none"; const overlay = document.getElementById("forwardOverlay"); overlay.style.display = "flex"; fetch(URL_FB + "contacts/" + myAccount + ".json").then(r => r.json()).then(contactsData => { const container = document.getElementById("forwardContactsList"); container.innerHTML = ""; if (!contactsData) { container.innerHTML = "У вас нет диалогов для пересылки."; return; } Object.keys(contactsData).forEach(log => { if (!contactsData[log]) return; const div = document.createElement("div"); div.className = "msg-context-item"; div.style.background = "rgba(255,255,255,0.05)"; div.style.marginBottom = "4px"; div.innerHTML = `<span>👤 <b>@${log}</b></span>`; div.onclick = () => executeForwardMessage(log); container.appendChild(div); }); }); }
     function closeForwardModal() { document.getElementById("forwardOverlay").style.display = "none"; }
-
-    function executeForwardMessage(targetContact) {
-        if (!selectedMsgData) return; 
-        const room = [myAccount, targetContact].sort().join("_"); 
-        const msgId = "msg_" + Date.now();
-        
-        // Создаем объект сообщения и добавляем поле forwardedFrom
-        const bodyMsg = { 
-            sender: myAccount, 
-            time: Date.now(),
-            text: selectedMsgData.text ? selectedMsgData.text : "",
-            forwardedFrom: selectedMsgData.forwardedFrom || selectedMsgData.sender // Если сообщение уже было переслано, сохраняем первого автора
-        };
-        if (selectedMsgData.file) bodyMsg.file = selectedMsgData.file;
-
-        fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { 
-            method: "PUT", 
-            headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify(bodyMsg) 
-        }).then(() => {
-            closeForwardModal(); 
-            alert(`Сообщение успешно переслано пользователю @${targetContact}!`); 
-            if (chatWith === targetContact) loadMessages();
-        });
-    }
-    // ФУНКЦИЯ УДАЛЕНИЯ КОНТАКТА ИЗ СПИСКА ДИАЛОГОВ
-    function actionDelContact(targetLog) {
-        if (!targetLog) return;
-        if (!confirm(`Вы действительно хотите удалить диалог с @${targetLog}?`)) return;
-        
-        // Удаляем запись о контакте из ветки текущего пользователя в Firebase
-        fetch(URL_FB + "contacts/" + myAccount + "/" + targetLog + ".json", {
-            method: "DELETE" // Используем метод DELETE для полного стирания ноды
-        })
-        .then(() => {
-            alert(`Диалог с @${targetLog} успешно удален.`);
-            actionLoadMyContacts(); // Перезагружаем список контактов на экране
-        })
-        .catch(err => {
-            alert("Ошибка сети при удалении контакта: " + err);
-        });
-    }
+    function executeForwardMessage(targetContact) { if (!selectedMsgData) return; const room = [myAccount, targetContact].sort().join("_"); const msgId = "msg_" + Date.now(); const bodyMsg = { sender: myAccount, time: Date.now(), text: selectedMsgData.text ? selectedMsgData.text : "", forwardedFrom: selectedMsgData.forwardedFrom || selectedMsgData.sender }; if (selectedMsgData.file) bodyMsg.file = selectedMsgData.file; fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => { closeForwardModal(); alert(`Сообщение успешно переслано пользователю @${targetContact}!`); if (chatWith === targetContact) loadMessages(); }); }
+    function actionDelContact(targetLog) { if (!targetLog) return; if (!confirm(`Вы действительно хотите удалить диалог с @${targetLog}?`)) return; fetch(URL_FB + "contacts/" + myAccount + "/" + targetLog + ".json", { method: "DELETE" }).then(() => { alert(`Диалог с @${targetLog} успешно удален.`); actionLoadMyContacts(); }).catch(err => { alert("Ошибка сети при удалении контакта: " + err); }); }
     function toggleVideoRecord() { if (!isRecordingVideo) { startVideoRecord(); } else { stopVideoRecord(); } }
-
-    function startVideoRecord() {
-        // Запрашиваем доступ сразу к селфи-камере и микрофону
-        navigator.mediaDevices.getUserMedia({ video: { width: 400, height: 400, facingMode: "user" }, audio: true })
-        .then(stream => {
-            videoStream = stream;
-            
-            // Включаем маленькое круглое окошко предпросмотра на экране
-            const previewVideo = document.getElementById("videoPreview");
-            previewVideo.srcObject = stream;
-            document.getElementById("videoPreviewBox").style.display = "block";
-
-            // Настраиваем запись (для iPhone выбираем mp4, для остальных webm)
-            let options = { mimeType: 'video/webm;codecs=vp9' };
-            if (!MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-                options = { mimeType: 'video/mp4' };
-            }
-
-            mediaRecorder = new MediaRecorder(stream, options);
-            audioChunks = []; // Будем собирать кусочки видео сюда
-            
-            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-            
-            mediaRecorder.onstop = () => {
-                const videoBlob = new Blob(audioChunks, { type: options.mimeType });
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    // Маркируем файл флагом isRoundVideo: true, чтобы чат понял, что это кружок
-                    attachedFile = { 
-                        name: options.mimeType.includes('mp4') ? "Circle.mp4" : "Circle.webm", 
-                        type: options.mimeType, 
-                        isRoundVideo: true, 
-                        data: reader.result 
-                    }; 
-                    actionSend(); 
-                };
-                reader.readAsDataURL(videoBlob);
-                
-                // Гарантированно тушим камеру и микрофон после записи
-                stream.getTracks().forEach(track => track.stop());
-            };
-
-            mediaRecorder.start();
-            isRecordingVideo = true;
-            
-            // Меняем внешний вид кнопки на стоп-квадратик
-            const btn = document.getElementById("videoBtn");
-            btn.style.background = "#dc3545"; btn.innerText = "⏹️";
-        }).catch(err => { alert("Не удалось включить камеру: " + err); });
+    function startVideoRecord() { navigator.mediaDevices.getUserMedia({ video: { width: 400, height: 400, facingMode: "user" }, audio: true }).then(stream => { videoStream = stream; const previewVideo = document.getElementById("videoPreview"); previewVideo.srcObject = stream; document.getElementById("videoPreviewBox").style.display = "block"; let options = { mimeType: 'video/webm;codecs=vp9' }; if (!MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) { options = { mimeType: 'video/mp4' }; } mediaRecorder = new MediaRecorder(stream, options); audioChunks = []; mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); }; mediaRecorder.onstop = () => { const videoBlob = new Blob(audioChunks, { type: options.mimeType }); const reader = new FileReader(); reader.onloadend = () => { attachedFile = { name: options.mimeType.includes('mp4') ? "Circle.mp4" : "Circle.webm", type: options.mimeType, isRoundVideo: true, data: reader.result }; actionSend(); }; reader.readAsDataURL(videoBlob); stream.getTracks().forEach(track => track.stop()); }; mediaRecorder.start(); isRecordingVideo = true; const btn = document.getElementById("videoBtn"); btn.style.background = "#dc3545"; btn.innerText = "⏹️"; }).catch(err => { alert("Не удалось включить камеру: " + err); }); }
+    function stopVideoRecord() { if (mediaRecorder && isRecordingVideo) { mediaRecorder.stop(); isRecordingVideo = false; document.getElementById("videoPreviewBox").style.display = "none"; const btn = document.getElementById("videoBtn"); btn.style.background = "#2481cc"; btn.innerText = "📷"; } }
+    function startCallMonitoring() {
+        if (callCheckTimer) clearInterval(callCheckTimer);
+        callCheckTimer = setInterval(() => {
+            if (isCallActive || !myAccount) return;
+            fetch(URL_FB + "calls.json").then(r => r.json()).then(allCalls => {
+                if (!allCalls) return;
+                Object.keys(allCalls).forEach(cId => {
+                    const call = allCalls[cId];
+                    if (!call) return;
+                    if (call.receiver === myAccount && call.status === "ringing") {
+                        showCallUi(cId, call.sender, "incoming");
+                    }
+                });
+            }).catch(e => console.log("Ошибка проверки звонков", e));
+        }, 2500);
     }
 
-    function stopVideoRecord() {
-        if (mediaRecorder && isRecordingVideo) {
-            mediaRecorder.stop();
-            isRecordingVideo = false;
-            
-            // Прячем окошко камеры
-            document.getElementById("videoPreviewBox").style.display = "none";
-            
-            const btn = document.getElementById("videoBtn");
-            btn.style.background = "#2481cc"; btn.innerText = "📷";
+    function showCallUi(callId, partner, type) {
+        isCallActive = true; currentCallId = callId;
+        document.getElementById("callOverlay").style.display = "flex";
+        document.getElementById("callScreenTitle").innerText = `@${partner}`;
+        if (type === "outgoing") {
+            document.getElementById("callScreenStatus").innerText = "Вызов...";
+            document.getElementById("acceptCallBtn").style.display = "none";
+        } else {
+            document.getElementById("callScreenStatus").innerText = "Входящий вызов...";
+            document.getElementById("acceptCallBtn").style.display = "block";
         }
+        trackCallStatus(callId);
     }
 
+    function trackCallStatus(callId) {
+        const callInterval = setInterval(() => {
+            if (!isCallActive || currentCallId !== callId) { clearInterval(callInterval); return; }
+            fetch(URL_FB + "calls/" + callId + ".json").then(r => r.json()).then(call => {
+                if (!call || call.status === "ended") { clearInterval(callInterval); cleanUpCall(); return; }
+                if (call.sender === myAccount && call.status === "accepted" && !peerConnection) {
+                    document.getElementById("callScreenStatus").innerText = "Разговор...";
+                    handleAnswerReceived(call.answer);
+                }
+                if (call.iceCandidates) {
+                    Object.keys(call.iceCandidates).forEach(k => {
+                        const cand = call.iceCandidates[k];
+                        if (cand.sender !== myAccount && !cand.processed) {
+                            if (peerConnection && peerConnection.remoteDescription) {
+                                peerConnection.addIceCandidate(new RTCIceCandidate(cand.candidate)).catch(e=>{});
+                                fetch(URL_FB + "calls/" + callId + "/iceCandidates/" + k + "/processed.json", { method: "PUT", body: "true" });
+                            }
+                        }
+                    });
+                }
+            });
+        }, 2000);
+    }
+
+    function initiateVoiceCall() {
+        if (!chatWith) return; const callId = "call_" + Date.now();
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            localStream = stream; showCallUi(callId, chatWith, "outgoing");
+            peerConnection = new RTCPeerConnection(rtcConfig);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            peerConnection.ontrack = (event) => { document.getElementById("remoteAudioPlayer").srcObject = event.streams[0]; };
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    const candId = "cand_" + Date.now() + Math.floor(Math.random()*100);
+                    fetch(URL_FB + "calls/" + callId + "/iceCandidates/" + candId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sender: myAccount, candidate: event.candidate, processed: false }) });
+                }
+            };
+            peerConnection.createOffer().then(offer => { return peerConnection.setLocalDescription(offer).then(() => offer); }).then(offer => {
+                const callPayload = { sender: myAccount, receiver: chatWith, status: "ringing", offer: offer, timestamp: Date.now() };
+                fetch(URL_FB + "calls/" + callId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(callPayload) });
+                fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": "📞 Входящий звонок" }, contents: { "en": `Вам звонит @${myAccount}` } }) }).catch(() => {});
+            });
+        }).catch(err => alert("Ошибка доступа к микрофону: " + err));
+    }
+
+    function acceptIncomingCall() {
+        if (!currentCallId) return;
+        document.getElementById("acceptCallBtn").style.display = "none";
+        document.getElementById("callScreenStatus").innerText = "Соединение...";
+        fetch(URL_FB + "calls/" + currentCallId + ".json").then(r => r.json()).then(call => {
+            if (!call) { endCurrentCall(); return; }
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                localStream = stream; peerConnection = new RTCPeerConnection(rtcConfig);
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+                peerConnection.ontrack = (event) => { document.getElementById("remoteAudioPlayer").srcObject = event.streams[0]; };
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        const candId = "cand_" + Date.now() + Math.floor(Math.random()*100);
+                        fetch(URL_FB + "calls/" + currentCallId + "/iceCandidates/" + candId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sender: myAccount, candidate: event.candidate, processed: false }) });
+                    }
+                };
+                peerConnection.setRemoteDescription(new RTCSessionDescription(call.offer)).then(() => { return peerConnection.createAnswer(); }).then(answer => { return peerConnection.setLocalDescription(answer).then(() => answer); }).then(answer => {
+                    fetch(URL_FB + "calls/" + currentCallId + "/answer.json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(answer) });
+                    fetch(URL_FB + "calls/" + currentCallId + "/status.json", { method: "PUT", body: JSON.stringify("accepted") });
+                    document.getElementById("callScreenStatus").innerText = "Разговор...";
+                });
+            }).catch(err => { alert("Ошибка микрофона при ответе: " + err); endCurrentCall(); });
+        });
+    }
+
+    function handleAnswerReceived(answer) { if (peerConnection && answer) { peerConnection.setRemoteDescription(new RTCSessionDescription(answer)).catch(e => console.log(e)); } }
+    function endCurrentCall() { if (!currentCallId) { cleanUpCall(); return; } fetch(URL_FB + "calls/" + currentCallId + "/status.json", { method: "PUT", body: JSON.stringify("ended") }).then(() => { setTimeout(() => { fetch(URL_FB + "calls/" + currentCallId + ".json", { method: "DELETE" }); }, 2000); cleanUpCall(); }); }
+    function cleanUpCall() { isCallActive = false; currentCallId = null; document.getElementById("callOverlay").style.display = "none"; document.getElementById("acceptCallBtn").style.display = "none"; if (peerConnection) { peerConnection.close(); peerConnection = null; } if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; } const remoteAudio = document.getElementById("remoteAudioPlayer"); if (remoteAudio) remoteAudio.srcObject = null; }
 </script>
 </body>
 </html>
