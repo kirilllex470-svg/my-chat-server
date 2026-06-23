@@ -654,7 +654,53 @@ function trackCallStatus(callId) {
     }
 
     function handleAnswerReceived(answer) { if (peerConnection && answer) { peerConnection.setRemoteDescription(new RTCSessionDescription(answer)).catch(e => console.log(e)); } }
-    function endCurrentCall() { if (!currentCallId) { cleanUpCall(); return; } fetch(URL_FB + "calls/" + currentCallId + "/status.json", { method: "PUT", body: JSON.stringify("ended") }).then(() => { setTimeout(() => { fetch(URL_FB + "calls/" + currentCallId + ".json", { method: "DELETE" }); }, 2000); cleanUpCall(); }); }
+    function endCurrentCall() {
+    if (!currentCallId) { cleanUpCall(); return; }
+    
+    // Получаем текущий статус экрана перед сбросом, чтобы понять, был ли разговор
+    const currentStatus = document.getElementById("callScreenStatus").innerText;
+    
+    // Читаем данные звонка из базы перед удалением, чтобы узнать, кому именно отправить системное сообщение
+    fetch(URL_FB + "calls/" + currentCallId + ".json").then(r => r.json()).then(call => {
+        if (call) {
+            // Определяем партнера по звонку и комнату
+            const partner = (call.sender === myAccount) ? call.receiver : call.sender;
+            const room = [myAccount, partner].sort().join("_");
+            const msgId = "msg_call_" + Date.now();
+            
+            // Формируем текст системного сообщения в зависимости от того, поговорили пользователи или нет
+            let systemText = "📞 Пропущенный вызов";
+            if (currentStatus === "Разговор...") {
+                systemText = "📞 Голосовой звонок завершен";
+            } else if (call.sender === myAccount) {
+                systemText = "📞 Исходящий вызов (нет ответа)";
+            }
+            
+            // Отправляем системное уведомление в вашу стандартную историю сообщений messages/
+            const bodyMsg = { 
+                sender: "Система", // Или можно указать call.sender, чтобы бабл правильно красился (my/other)
+                text: systemText, 
+                time: Date.now() 
+            };
+            
+            fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { 
+                method: "PUT", 
+                headers: { "Content-Type": "application/json" }, 
+                body: JSON.stringify(bodyMsg) 
+            }).then(() => {
+                // Если мы сейчас находимся в чате именно с этим пользователем, сразу обновляем переписку
+                if (chatWith === partner) loadMessages();
+            });
+        }
+    }).finally(() => {
+        // Переводим статус звонка в "ended", удаляем сессию из БД и чистим интерфейс звонка
+        fetch(URL_FB + "calls/" + currentCallId + "/status.json", { method: "PUT", body: JSON.stringify("ended") }).then(() => {
+            setTimeout(() => { fetch(URL_FB + "calls/" + currentCallId + ".json", { method: "DELETE" }); }, 2000);
+            cleanUpCall();
+        });
+    });
+}
+
     function cleanUpCall() { isCallActive = false; currentCallId = null; document.getElementById("callOverlay").style.display = "none"; document.getElementById("acceptCallBtn").style.display = "none"; if (peerConnection) { peerConnection.close(); peerConnection = null; } if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; } const remoteAudio = document.getElementById("remoteAudioPlayer"); if (remoteAudio) remoteAudio.srcObject = null; }
 </script>
 </body>
