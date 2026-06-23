@@ -235,22 +235,23 @@
     let peerConnection = null, localStream = null, currentCallId = null, callCheckTimer = null, isCallActive = false;
     let callTimeoutTimer = null, audioCtx = null, beepInterval = null;
 
-    // Безопасная конфигурация STUN и TURN серверов
-    let rtcConfig = { 
-        iceServers: [
-            { urls: "stun:://google.com" },
-            { urls: "stun:://google.com" },
-            { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" }
-        ] 
-    };
+// Единственная, чистая и безопасная конфигурация STUN и TURN серверов
+let rtcConfig = { 
+    iceServers: [
+        { urls: "stun:://google.com" },
+        { urls: "stun:://google.com" },
+        { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" }
+    ] 
+};
 
-    try {
-        new RTCPeerConnection(rtcConfig);
-        console.log("✅ Конфигурация WebRTC успешно инициализирована");
-    } catch (e) {
-        console.warn("⚠️ Ошибка конфигурации ICE, включен аварийный режим:", e);
-        rtcConfig = { iceServers: [{ urls: "stun:://google.com" }] };
-    }
+// Проверяем, чтобы ниже в коде НЕ БЫЛО других строк "const rtcConfig = ..." или "let rtcConfig = ..."
+try {
+    new RTCPeerConnection(rtcConfig);
+    console.log("✅ Конфигурация WebRTC успешно инициализирована");
+} catch (e) {
+    console.warn("⚠️ Ошибка конфигурации ICE, включен аварийный режим:", e);
+    rtcConfig = { iceServers: [{ urls: "stun:://google.com" }] };
+}
 
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
     const msgSound = new Audio("https://google.com");
