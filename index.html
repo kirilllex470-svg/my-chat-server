@@ -233,6 +233,7 @@
     // Новые переменные для поддержки WebRTC звонков
     let peerConnection = null, localStream = null, currentCallId = null, callCheckTimer = null, isCallActive = false;
 // Полностью очищенная и безопасная конфигурация STUN-серверов
+// Полностью очищенная и безопасная конфигурация STUN-серверов
 let rtcConfig = { 
     iceServers: [
         { urls: "stun:://google.com" },
@@ -247,6 +248,7 @@ try {
     console.warn("⚠️ Найдена ошибка парсинга ICE-серверов, применен аварийный режим:", e);
     rtcConfig = { iceServers: [] }; // Локальные звонки в одной сети Wi-Fi все равно будут работать
 }
+
 
 
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
