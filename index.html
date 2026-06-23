@@ -260,26 +260,22 @@
     
     // ПЕРЕМЕННЫЕ ДЛЯ WebRTC ЗВОНКОВ
     let peerConnection = null, localStream = null, currentCallId = null, callCheckTimer = null, isCallActive = false;
-    // НАДЕЖНАЯ КОНФИГУРАЦИЯ ICE ДЛЯ ЗВОНКОВ
+      // НАДЕЖНАЯ КОНФИГУРАЦИЯ ICE ДЛЯ ЗВОНКОВ (ИСПРАВЛЕННАЯ)
     let rtcConfig = { 
         iceServers: [
             { urls: "stun:://google.com" },
             { urls: "stun:://google.com" },
-            {
-                urls: "turn:openrelay.metered.ca:443",
-                username: "openrelayproject",
-                credential: "openrelayproject"
-            }
+            { urls: "stun:://google.com" },
+            { urls: "stun:://google.com" }
         ] 
     };
 
-    // ЗАЩИТНЫЙ БЛОК ИНИЦИАЛИЗАЦИИ РСPeerConnection
+    // ЗАЩИТНЫЙ БЛОК ИНИЦИАЛИЗАЦИИ RTCPeerConnection
     try {
         new RTCPeerConnection(rtcConfig);
         console.log("✅ Конфигурация WebRTC успешно инициализирована");
     } catch (e) {
-        console.warn("⚠️ Ошибка конфигурации ICE, включен аварийный режим:", e);
-        rtcConfig = { iceServers: [{ urls: "stun:://google.com" }] };
+        console.warn("⚠️ Критическая ошибка WebRTC:", e);
     }
 
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
