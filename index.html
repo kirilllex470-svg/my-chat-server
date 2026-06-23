@@ -7,7 +7,6 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" href="data:,">
     <script src="https://onesignal.com" defer></script>
     <style>
         /* Стиль самого видео-кружка в истории чата */
@@ -51,7 +50,7 @@
 
         /* Фирменный фоновый узор МСБ55115 с узорами и иконками чата */
         #areaMessages {
-            background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTgwIDE4MCI+CjxzdHlsZT4KLnR4dCB7IGZpbGw6IHJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSk7IGZvbnQtZmFtaWx5OiBzYW5zLXNlcmlmOyBmb250LXdlaWdodDogYm9sZDsgZm9udC1zaXplOiAxM3B4OyB9Ci5pY28geyBmaWxsOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDQpOyBmb250LWZhbWlseTogc2Fucy1zZXJpZjsgZm9udC1zaXplOiAxNnB4OyB9Cjwvc3R5bGU+CjxnIHRyYW5zZm9ybT0icm90YXRlKC0yMCA5MCA5MCkiPgo8dGV4dCB4PSI0NSIgeT0iOTUiIGNsYXNzPSJ0eHQiPiYjMTA1MjsmIzEwNTc7JiMxMDQxOzU1MTE1PC90ZXh0Pgo8dGV4dCB4 Scholz0iMjAiIHk9IjQwIiBjbGFzcz0iaWNvIj4mIzk5OTI7PC90ZXh0Pgo8dGV4dCB4PSIxNDAiIHk9IjQwIiBjbGFzcz0iaWNvIj4mIzk3Mjk7PC90ZXh0Pgo8dGV4dCB4 Scholz0iMjAiIHk9IjE1MCIgY2xhc3M9ImljbyI+JiMxMjgxNzI7PC90ZXh0Pgo8dGV4dCB4PSIxNDAiIHk9IjE1MCIgY2xhc3M9ImljbyI+JiMxMDAyNDs8L3RleHQ+CjwvZz4KPC9zdmc+") !important;
+            background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTgwIDE4MCI+CjxzdHlsZT4KLnR4dCB7IGZpbGw6IHJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSk7IGZvbnQtZmFtaWx5OiBzYW5zLXNlcmlmOyBmb250LXdlaWdodDogYm9sZDsgZm9udC1zaXplOiAxM3B4OyB9Ci5pY28geyBmaWxsOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDQpOyBmb250LWZhbWlseTogc2Fucy1zZXJpZjsgZm9udC1zaXplOiAxNnB4OyB9Cjwvc3R5bGU+CjxnIHRyYW5zZm9ybT0icm90YXRlKC0yMCA5MCA5MCkiPgo8dGV4dCB4PSI0NSIgeT0iOTUiIGNsYXNzPSJ0eHQiPiYjMTA1MjsmIzEwNTc7JiMxMDQxOzU1MTE1PC90ZXh0Pgo8dGV4dCB4PSIyMCIgeT0iNDAiIGNsYXNzPSpY28iPiYjOTk5Mjs8L3RleHQ+Cjx0ZXh0IHg9IjE0MCIgeT0iNDAiIGNsYXNzPSpY28iPiYjOTcyOTs8L3RleHQ+Cjx0ZXh0IHg9IjIwIiB5PSIxNTAiIGNsYXNzPSpY28iPiYjMTI4MTcyOzwvdGV4dD4KPHRleHQgeD0iMTQwIiB5PSIxNTAiIGNsYXNzPSpY28iPiYjMTAwMjQ7PC90ZXh0Pgo8L2c+Cjwvc3ZnPg==") !important;
             background-repeat: repeat !important;
             background-color: rgba(0, 0, 0, 0.15) !important;
             border-radius: 18px;
@@ -231,33 +230,33 @@
     let selectedMsgId = null, selectedMsgData = null;
     let isRecordingVideo = false, videoStream = null;
     
-    // Переменные для поддержки WebRTC звонков и звука
+    // Новые переменные для поддержки WebRTC звонков
     let peerConnection = null, localStream = null, currentCallId = null, callCheckTimer = null, isCallActive = false;
-    let callTimeoutTimer = null, audioCtx = null, beepInterval = null;
 
-// Единственная, чистая и безопасная конфигурация STUN и TURN серверов
+// Надежная конфигурация: 2 сервера STUN от Google и 1 стабильный публичный TURN-сервер
 let rtcConfig = { 
     iceServers: [
-        { urls: "stun:://google.com" },
-        { urls: "stun:://google.com" },
-        { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" }
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+        {
+            urls: "turn:openrelay.metered.ca:443",
+            username: "openrelayproject",
+            credential: "openrelayproject"
+        }
     ] 
 };
 
-// Простейшая и 100% рабочая конфигурация без TURN-серверов для локальных тестов
-let rtcConfig = { 
-    iceServers: [
-        { urls: "stun:://google.com" }
-    ] 
-};
-
-// Защита: если браузер всё равно споткнется, мы принудительно очистим настройки
+// Защитный блок инициализации
 try {
     new RTCPeerConnection(rtcConfig);
+    console.log("✅ Конфигурация WebRTC успешно инициализирована");
 } catch (e) {
-    console.error("Критическая ошибка WebRTC:", e);
-    rtcConfig = { iceServers: [] };
+    console.warn("⚠️ Ошибка конфигурации ICE, включен аварийный режим:", e);
+    rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 }
+
+
+
 
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
     const msgSound = new Audio("https://google.com");
@@ -273,6 +272,7 @@ try {
         document.getElementById("emojiPopTray").classList.remove("open"); 
         document.getElementById("msgContextMenu").style.display = "none";
     });
+    
     function triggerTopBanner(sender, text) { 
         const b = document.getElementById("inAppNotification"); 
         document.getElementById("inAppTitle").innerText = `💬 Новое от @${sender}`; 
@@ -292,19 +292,23 @@ try {
         reader.onload = function(e) { attachedFile = { name: file.name, type: file.type, data: e.target.result }; const clip = document.getElementById("fileClipBtn"); clip.style.background = "rgba(40, 167, 69, 0.3)"; clip.innerText = "✅"; };
         reader.readAsDataURL(file);
     }
-
     function actionSend() {
         const text = document.getElementById("textInp").value.trim(); 
         let hasFile = (attachedFile && attachedFile.data) ? true : false;
         if (!text && !hasFile) return; 
         if (!chatWith) return;
         
-        const room = [myAccount, chatWith].sort().join("_"); const msgId = "msg_" + Date.now(); const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; if (hasFile) bodyMsg.file = attachedFile;
+        const room = [myAccount, chatWith].sort().join("_"); 
+        const msgId = "msg_" + Date.now(); 
+        const bodyMsg = { sender: myAccount, text: text, time: Date.now() }; 
+        if (hasFile) bodyMsg.file = attachedFile;
+        
         fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => {
             fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": `Новое от ${myAccount}` }, contents: { "en": text ? text : (attachedFile && attachedFile.voice ? "Голосовое сообщение" : "Файл") } }) }).catch(() => {});
             document.getElementById("textInp").value = ""; attachedFile = null; const clip = document.getElementById("fileClipBtn"); clip.style.background = "transparent"; clip.innerHTML = "📎<input type='file' id='fileInp' style='display:none;' onchange='handleFileSelect(this)'>"; loadMessages();
         });
     }
+
     function toggleVoiceRecord() { if (!isRecordingVoice) { startVoiceRecord(); } else { stopVoiceRecord(); } }
     
     function startVoiceRecord() {
@@ -331,7 +335,7 @@ try {
             const btn = document.getElementById("voiceBtn"); btn.style.background = "#dc3545"; btn.innerText = "🛑";
         }).catch(err => { alert("Не удалось получить доступ к микрофону: " + err); });
     }
-
+    
     function stopVoiceRecord() { 
         if (mediaRecorder && isRecordingVoice) { 
             mediaRecorder.stop(); isRecordingVoice = false; 
@@ -340,7 +344,6 @@ try {
             const btn = document.getElementById("voiceBtn"); btn.style.background = "#28a745"; btn.innerText = "🎙️"; 
         } 
     }
-
     function appRegister() {
         const log = document.getElementById("loginInp").value.trim().toLowerCase();
         const pas = document.getElementById("passInp").value;
@@ -353,6 +356,7 @@ try {
             return fetch(URL_FB + "users/" + log + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pas, id: customID, lastSeen: Date.now() }) });
         }).then(res => { if(res) { status.style.color = "#28a745"; status.innerText = "Успешно! Теперь нажмите 'Войти'"; } }).catch(() => { status.innerText = "Ошибка сети при регистрации!"; });
     }
+    
     function appLogin() {
         const log = document.getElementById("loginInp").value.trim().toLowerCase();
         const pas = document.getElementById("passInp").value;
@@ -503,7 +507,7 @@ try {
                 if (timeStr) { html += `<div style="font-size:10px; opacity:0.4; text-align:right; margin-top:4px;">${timeStr}</div>`; }
                 r.innerHTML = html;
                 let pressTimer;
-                r.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => { e.preventDefault(); openMessageMenu(e.touches.clientX, e.touches.clientY, msgId, msg); }, 600); }, { passive: false });
+                r.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => { e.preventDefault(); openMessageMenu(e.touches[0].clientX, e.touches[0].clientY, msgId, msg); }, 600); }, { passive: false });
                 r.addEventListener('touchend', () => clearTimeout(pressTimer)); r.addEventListener('touchmove', () => clearTimeout(pressTimer));
                 r.addEventListener('contextmenu', (e) => { e.preventDefault(); openMessageMenu(e.clientX, e.clientY, msgId, msg); });
                 area.appendChild(r);
@@ -520,15 +524,18 @@ try {
     function toggleVideoRecord() { if (!isRecordingVideo) { startVideoRecord(); } else { stopVideoRecord(); } }
     function startVideoRecord() { navigator.mediaDevices.getUserMedia({ video: { width: 400, height: 400, facingMode: "user" }, audio: true }).then(stream => { videoStream = stream; const previewVideo = document.getElementById("videoPreview"); previewVideo.srcObject = stream; document.getElementById("videoPreviewBox").style.display = "block"; let options = { mimeType: 'video/webm;codecs=vp9' }; if (!MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) { options = { mimeType: 'video/mp4' }; } mediaRecorder = new MediaRecorder(stream, options); audioChunks = []; mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); }; mediaRecorder.onstop = () => { const videoBlob = new Blob(audioChunks, { type: options.mimeType }); const reader = new FileReader(); reader.onloadend = () => { attachedFile = { name: options.mimeType.includes('mp4') ? "Circle.mp4" : "Circle.webm", type: options.mimeType, isRoundVideo: true, data: reader.result }; actionSend(); }; reader.readAsDataURL(videoBlob); stream.getTracks().forEach(track => track.stop()); }; mediaRecorder.start(); isRecordingVideo = true; const btn = document.getElementById("videoBtn"); btn.style.background = "#dc3545"; btn.innerText = "⏹️"; }).catch(err => { alert("Не удалось включить камеру: " + err); }); }
     function stopVideoRecord() { if (mediaRecorder && isRecordingVideo) { mediaRecorder.stop(); isRecordingVideo = false; document.getElementById("videoPreviewBox").style.display = "none"; const btn = document.getElementById("videoBtn"); btn.style.background = "#2481cc"; btn.innerText = "📷"; } }
-  function startCallMonitoring() {
+    function startCallMonitoring() {
         if (callCheckTimer) clearInterval(callCheckTimer);
         callCheckTimer = setInterval(() => {
             if (isCallActive || !myAccount) return;
             fetch(URL_FB + "calls.json").then(r => r.json()).then(allCalls => {
                 if (!allCalls) return;
                 Object.keys(allCalls).forEach(cId => {
-                    const call = allCalls[cId]; if (!call) return;
-                    if (call.receiver === myAccount && call.status === "ringing") { showCallUi(cId, call.sender, "incoming"); }
+                    const call = allCalls[cId];
+                    if (!call) return;
+                    if (call.receiver === myAccount && call.status === "ringing") {
+                        showCallUi(cId, call.sender, "incoming");
+                    }
                 });
             }).catch(e => console.log("Ошибка проверки звонков", e));
         }, 2500);
@@ -538,163 +545,184 @@ try {
         isCallActive = true; currentCallId = callId;
         document.getElementById("callOverlay").style.display = "flex";
         document.getElementById("callScreenTitle").innerText = `@${partner}`;
-        const statusLabel = document.getElementById("callScreenStatus");
-        statusLabel.style.color = "rgba(255,255,255,0.6)"; statusLabel.style.fontWeight = "normal";
         if (type === "outgoing") {
-            statusLabel.innerText = "Вызов..."; document.getElementById("acceptCallBtn").style.display = "none";
+            document.getElementById("callScreenStatus").innerText = "Вызов...";
+            document.getElementById("acceptCallBtn").style.display = "none";
         } else {
-            statusLabel.innerText = "Входящий вызов..."; document.getElementById("acceptCallBtn").style.display = "block";
+            document.getElementById("callScreenStatus").innerText = "Входящий вызов...";
+            document.getElementById("acceptCallBtn").style.display = "block";
         }
-        if (callTimeoutTimer) clearTimeout(callTimeoutTimer);
-        callTimeoutTimer = setTimeout(() => {
-            if (isCallActive && document.getElementById("callScreenStatus").innerText !== "Разговор...") {
-                alert("Не удалось установить соединение. Абонент недоступен."); endCurrentCall();
-            }
-        }, 15000);
         trackCallStatus(callId);
     }
 
-    function trackCallStatus(callId) {
-        const callInterval = setInterval(() => {
-            if (!isCallActive || currentCallId !== callId) { clearInterval(callInterval); return; }
-            fetch(URL_FB + "calls/" + callId + ".json").then(r => r.json()).then(call => {
-                if (!call || call.status === "ended") { clearInterval(callInterval); cleanUpCall(); return; }
-                if (call.sender === myAccount && call.status === "accepted") {
-                    if (document.getElementById("callScreenStatus").innerText !== "Разговор...") {
-                        document.getElementById("callScreenStatus").innerText = "Разговор...";
-                        stopDialTones(); if (callTimeoutTimer) { clearTimeout(callTimeoutTimer); callTimeoutTimer = null; }
-                    }
-                    if (call.answer && peerConnection && !peerConnection.remoteDescription) { handleAnswerReceived(call.answer); }
+function trackCallStatus(callId) {
+    const callInterval = setInterval(() => {
+        if (!isCallActive || currentCallId !== callId) { 
+            clearInterval(callInterval); 
+            return; 
+        }
+        
+        fetch(URL_FB + "calls/" + callId + ".json").then(r => r.json()).then(call => {
+            if (!call || call.status === "ended") { 
+                clearInterval(callInterval); 
+                cleanUpCall(); 
+                return; 
+            }
+            
+            // Инициатор звонка видит, что звонок принят, меняет статус и применяет ответ (Answer)
+            if (call.sender === myAccount && call.status === "accepted") {
+                if (document.getElementById("callScreenStatus").innerText !== "Разговор...") {
+                    document.getElementById("callScreenStatus").innerText = "Разговор...";
                 }
-                if (call.receiver === myAccount && call.status === "accepted") {
-                    if (document.getElementById("callScreenStatus").innerText !== "Разговор...") {
-                        document.getElementById("callScreenStatus").innerText = "Разговор...";
-                        stopDialTones(); if (callTimeoutTimer) { clearTimeout(callTimeoutTimer); callTimeoutTimer = null; }
-                    }
+                if (call.answer && peerConnection && !peerConnection.remoteDescription) {
+                    handleAnswerReceived(call.answer);
                 }
-                if (call.iceCandidates) {
-                    Object.keys(call.iceCandidates).forEach(k => {
-                        const cand = call.iceCandidates[k]; if (!cand) return;
-                        if (cand.sender !== myAccount && !cand.processed) {
-                            if (peerConnection && peerConnection.remoteDescription) {
-                                peerConnection.addIceCandidate(new RTCIceCandidate(cand.candidate)).then(() => {
-                                    fetch(URL_FB + "calls/" + callId + "/iceCandidates/" + k + "/processed.json", { method: "PUT", body: "true" });
-                                }).catch(e => console.log(e));
-                            }
+            }
+
+            // Принимающий звонок видит, что статус сменился на "accepted" на сервере, и тоже обновляет экран
+            if (call.receiver === myAccount && call.status === "accepted") {
+                if (document.getElementById("callScreenStatus").innerText !== "Разговор...") {
+                    document.getElementById("callScreenStatus").innerText = "Разговор...";
+                }
+            }
+            
+            // ИСПРАВЛЕННЫЙ ОБМЕН ICE-КАНДИДАТАМИ:
+            // Каждая сторона должна забирать кандидаты ТОЛЬКО от чужого аккаунта
+            if (call.iceCandidates) {
+                Object.keys(call.iceCandidates).forEach(k => {
+                    const cand = call.iceCandidates[k];
+                    if (!cand) return;
+                    
+                    // Если кандидат пришел от собеседника и еще не обработан локально
+                    if (cand.sender !== myAccount && !cand.processed) {
+                        if (peerConnection && peerConnection.remoteDescription) {
+                            peerConnection.addIceCandidate(new RTCIceCandidate(cand.candidate))
+                            .then(() => {
+                                // Помечаем в общей базе данных, что текущий пользователь этот кандидат обработал
+                                fetch(URL_FB + "calls/" + callId + "/iceCandidates/" + k + "/processed.json", { 
+                                    method: "PUT", 
+                                    body: "true" 
+                                });
+                            })
+                            .catch(e => console.log("Ошибка добавления кандидата:", e));
                         }
-                    });
-                }
-            });
-        }, 1500);
-    }
-        function initiateVoiceCall() {
+                    }
+                });
+            }
+        }).catch(e => console.error("Ошибка обновления статуса вызова:", e));
+    }, 1500); // Немного ускорили опрос до 1.5 сек для более быстрой связки звонка
+}
+
+
+    function initiateVoiceCall() {
         if (!chatWith) return; const callId = "call_" + Date.now();
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            localStream = stream; showCallUi(callId, chatWith, "outgoing"); startDialTones();
+            localStream = stream; showCallUi(callId, chatWith, "outgoing");
             peerConnection = new RTCPeerConnection(rtcConfig);
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-            peerConnection.ontrack = (event) => {
-                const audioPlayer = document.getElementById("remoteAudioPlayer");
-                if (event.streams && event.streams[0]) {
-                    audioPlayer.srcObject = event.streams[0];
-                    audioPlayer.play().catch(() => { document.body.addEventListener('click', () => { audioPlayer.play(); }, { once: true }); });
-                }
-            };
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    const candId = "cand_" + Date.now() + Math.floor(Math.random()*100);
-                    fetch(URL_FB + "calls/" + callId + "/iceCandidates/" + candId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sender: myAccount, candidate: event.candidate, processed: false }) });
-                }
-            };
+peerConnection.ontrack = (event) => {
+    const audioPlayer = document.getElementById("remoteAudioPlayer");
+    if (event.streams && event.streams[0]) {
+        audioPlayer.srcObject = event.streams[0]; // Явно передаем первый медиа-поток комнатам
+        
+        // Принудительно запускаем воспроизведение звука, обходя блокировки автоплея браузера
+        audioPlayer.play().catch(err => {
+            console.log("Браузер заблокировал автоматический звук. Требуется клик.", err);
+            // Аварийный запуск звука при первом же тапе пользователя по экрану
+            document.body.addEventListener('click', () => { audioPlayer.play(); }, { once: true });
+        });
+    }
+};
+
             peerConnection.createOffer().then(offer => { return peerConnection.setLocalDescription(offer).then(() => offer); }).then(offer => {
                 const callPayload = { sender: myAccount, receiver: chatWith, status: "ringing", offer: offer, timestamp: Date.now() };
                 fetch(URL_FB + "calls/" + callId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(callPayload) });
                 fetch("https://onesignal.com", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": "Basic fyk74f7gcuhuvbrpbgbnbepjg" }, body: JSON.stringify({ app_id: "a11bd4a6-a783-421e-b975-01f2f1b8a733", include_aliases: { "external_id": [chatWith] }, target_channel: "push", headings: { "en": "📞 Входящий звонок" }, contents: { "en": `Вам звонит @${myAccount}` } }) }).catch(() => {});
             });
-        }).catch(err => {
-            const statusLabel = document.getElementById("callScreenStatus");
-            statusLabel.innerText = "❌ Ошибка: " + err.name + " (" + err.message + ")"; statusLabel.style.color = "#ff6b6b"; statusLabel.style.fontWeight = "bold";
-        });
+        }).catch(err => alert("Ошибка доступа к микрофону: " + err));
     }
+
     function acceptIncomingCall() {
         if (!currentCallId) return;
-        document.getElementById("acceptCallBtn").style.display = "none"; document.getElementById("callScreenStatus").innerText = "Соединение...";
+        document.getElementById("acceptCallBtn").style.display = "none";
+        document.getElementById("callScreenStatus").innerText = "Соединение...";
         fetch(URL_FB + "calls/" + currentCallId + ".json").then(r => r.json()).then(call => {
             if (!call) { endCurrentCall(); return; }
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
                 localStream = stream; peerConnection = new RTCPeerConnection(rtcConfig);
                 localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-                peerConnection.ontrack = (event) => {
-                    const audioPlayer = document.getElementById("remoteAudioPlayer");
-                    if (event.streams && event.streams[0]) {
-                        audioPlayer.srcObject = event.streams[0];
-                        audioPlayer.play().catch(() => { document.body.addEventListener('click', () => { audioPlayer.play(); }, { once: true }); });
-                    }
-                };
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        const candId = "cand_" + Date.now() + Math.floor(Math.random()*100);
-                        fetch(URL_FB + "calls/" + currentCallId + "/iceCandidates/" + candId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sender: myAccount, candidate: event.candidate, processed: false }) });
-                    }
-                };
+peerConnection.ontrack = (event) => {
+    const audioPlayer = document.getElementById("remoteAudioPlayer");
+    if (event.streams && event.streams[0]) {
+        audioPlayer.srcObject = event.streams[0]; // Явно передаем первый медиа-поток комнатам
+        
+        // Принудительно запускаем воспроизведение звука, обходя блокировки автоплея браузера
+        audioPlayer.play().catch(err => {
+            console.log("Браузер заблокировал автоматический звук. Требуется клик.", err);
+            // Аварийный запуск звука при первом же тапе пользователя по экрану
+            document.body.addEventListener('click', () => { audioPlayer.play(); }, { once: true });
+        });
+    }
+};
+
                 peerConnection.setRemoteDescription(new RTCSessionDescription(call.offer)).then(() => { return peerConnection.createAnswer(); }).then(answer => { return peerConnection.setLocalDescription(answer).then(() => answer); }).then(answer => {
                     fetch(URL_FB + "calls/" + currentCallId + "/answer.json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(answer) });
                     fetch(URL_FB + "calls/" + currentCallId + "/status.json", { method: "PUT", body: JSON.stringify("accepted") });
                     document.getElementById("callScreenStatus").innerText = "Разговор...";
                 });
-            }).catch(err => {
-                const statusLabel = document.getElementById("callScreenStatus");
-                statusLabel.innerText = "❌ Ошибка микрофона: " + err.message; statusLabel.style.color = "#ff6b6b"; statusLabel.style.fontWeight = "bold";
-                setTimeout(endCurrentCall, 4000);
-            });
+            }).catch(err => { alert("Ошибка микрофона при ответе: " + err); endCurrentCall(); });
         });
     }
 
     function handleAnswerReceived(answer) { if (peerConnection && answer) { peerConnection.setRemoteDescription(new RTCSessionDescription(answer)).catch(e => console.log(e)); } }
-    
     function endCurrentCall() {
-        if (!currentCallId) { cleanUpCall(); return; }
-        const currentStatus = document.getElementById("callScreenStatus").innerText;
-        fetch(URL_FB + "calls/" + currentCallId + ".json").then(r => r.json()).then(call => {
-            if (call) {
-                const partner = (call.sender === myAccount) ? call.receiver : call.sender;
-                const room = [myAccount, partner].sort().join("_"); const msgId = "msg_call_" + Date.now();
-                let systemText = "📞 Пропущенный вызов";
-                if (currentStatus === "Разговор...") { systemText = "📞 Голосовой звонок завершен"; }
-                else if (call.sender === myAccount) { systemText = "📞 Исходящий вызов (нет ответа)"; }
-                const bodyMsg = { sender: "Система", text: systemText, time: Date.now() };
-                fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyMsg) }).then(() => { if (chatWith === partner) loadMessages(); });
+    if (!currentCallId) { cleanUpCall(); return; }
+    
+    // Получаем текущий статус экрана перед сбросом, чтобы понять, был ли разговор
+    const currentStatus = document.getElementById("callScreenStatus").innerText;
+    
+    // Читаем данные звонка из базы перед удалением, чтобы узнать, кому именно отправить системное сообщение
+    fetch(URL_FB + "calls/" + currentCallId + ".json").then(r => r.json()).then(call => {
+        if (call) {
+            // Определяем партнера по звонку и комнату
+            const partner = (call.sender === myAccount) ? call.receiver : call.sender;
+            const room = [myAccount, partner].sort().join("_");
+            const msgId = "msg_call_" + Date.now();
+            
+            // Формируем текст системного сообщения в зависимости от того, поговорили пользователи или нет
+            let systemText = "📞 Пропущенный вызов";
+            if (currentStatus === "Разговор...") {
+                systemText = "📞 Голосовой звонок завершен";
+            } else if (call.sender === myAccount) {
+                systemText = "📞 Исходящий вызов (нет ответа)";
             }
-        }).finally(() => {
-            fetch(URL_FB + "calls/" + currentCallId + "/status.json", { method: "PUT", body: JSON.stringify("ended") }).then(() => {
-                setTimeout(() => { fetch(URL_FB + "calls/" + currentCallId + ".json", { method: "DELETE" }); }, 2000); cleanUpCall();
+            
+            // Отправляем системное уведомление в вашу стандартную историю сообщений messages/
+            const bodyMsg = { 
+                sender: "Система", // Или можно указать call.sender, чтобы бабл правильно красился (my/other)
+                text: systemText, 
+                time: Date.now() 
+            };
+            
+            fetch(URL_FB + "messages/" + room + "/" + msgId + ".json", { 
+                method: "PUT", 
+                headers: { "Content-Type": "application/json" }, 
+                body: JSON.stringify(bodyMsg) 
+            }).then(() => {
+                // Если мы сейчас находимся в чате именно с этим пользователем, сразу обновляем переписку
+                if (chatWith === partner) loadMessages();
             });
-        });
-    }
-    function cleanUpCall() {
-        stopDialTones(); isCallActive = false; currentCallId = null;
-        if (callTimeoutTimer) { clearTimeout(callTimeoutTimer); callTimeoutTimer = null; }
-        document.getElementById("callOverlay").style.display = "none"; document.getElementById("acceptCallBtn").style.display = "none";
-        if (peerConnection) { peerConnection.close(); peerConnection = null; }
-        if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; }
-        const remoteAudio = document.getElementById("remoteAudioPlayer"); if (remoteAudio) remoteAudio.srcObject = null;
-    }
-
-    function startDialTones() {
-        stopDialTones(); if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        function playSingleBeep() {
-            if (!isCallActive) return;
-            try {
-                let oscillator = audioCtx.createOscillator(); let gainNode = audioCtx.createGain();
-                oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(425, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
-                oscillator.start(); gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.0); oscillator.stop(audioCtx.currentTime + 1.0);
-            } catch (e) { console.log(e); }
         }
-        playSingleBeep(); beepInterval = setInterval(playSingleBeep, 4000);
-    }
+    }).finally(() => {
+        // Переводим статус звонка в "ended", удаляем сессию из БД и чистим интерфейс звонка
+        fetch(URL_FB + "calls/" + currentCallId + "/status.json", { method: "PUT", body: JSON.stringify("ended") }).then(() => {
+            setTimeout(() => { fetch(URL_FB + "calls/" + currentCallId + ".json", { method: "DELETE" }); }, 2000);
+            cleanUpCall();
+        });
+    });
+}
 
-    function stopDialTones() { if (beepInterval) { clearInterval(beepInterval); beepInterval = null; } }
+    function cleanUpCall() { isCallActive = false; currentCallId = null; document.getElementById("callOverlay").style.display = "none"; document.getElementById("acceptCallBtn").style.display = "none"; if (peerConnection) { peerConnection.close(); peerConnection = null; } if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; } const remoteAudio = document.getElementById("remoteAudioPlayer"); if (remoteAudio) remoteAudio.srcObject = null; }
 </script>
 </body>
 </html>
