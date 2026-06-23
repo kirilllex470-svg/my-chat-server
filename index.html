@@ -596,7 +596,11 @@ function initiateVoiceCall() {
     if (!chatWith) return; const callId = "call_" + Date.now();
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         localStream = stream; showCallUi(callId, chatWith, "outgoing");
-        peerConnection = new RTCPeerConnection(rtcConfig);
+        
+        // Гарантированно чистая конфигурация без TURN-ошибок
+        const cleanConfig = { iceServers: [{ urls: "stun:://google.com" }, { urls: "stun:://google.com" }] };
+        peerConnection = new RTCPeerConnection(cleanConfig);
+        
         localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
@@ -626,7 +630,12 @@ function acceptIncomingCall() {
     fetch(URL_FB + "calls/" + currentCallId + ".json").then(r => r.json()).then(call => {
         if (!call) { endCurrentCall(); return; }
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            localStream = stream; peerConnection = new RTCPeerConnection(rtcConfig);
+            localStream = stream;
+            
+            // Гарантированно чистая конфигурация без TURN-ошибок
+            const cleanConfig = { iceServers: [{ urls: "stun:://google.com" }, { urls: "stun:://google.com" }] };
+            peerConnection = new RTCPeerConnection(cleanConfig);
+            
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
