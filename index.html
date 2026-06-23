@@ -548,29 +548,64 @@ try {
         trackCallStatus(callId);
     }
 
-    function trackCallStatus(callId) {
-        const callInterval = setInterval(() => {
-            if (!isCallActive || currentCallId !== callId) { clearInterval(callInterval); return; }
-            fetch(URL_FB + "calls/" + callId + ".json").then(r => r.json()).then(call => {
-                if (!call || call.status === "ended") { clearInterval(callInterval); cleanUpCall(); return; }
-                if (call.sender === myAccount && call.status === "accepted" && !peerConnection) {
+function trackCallStatus(callId) {
+    const callInterval = setInterval(() => {
+        if (!isCallActive || currentCallId !== callId) { 
+            clearInterval(callInterval); 
+            return; 
+        }
+        
+        fetch(URL_FB + "calls/" + callId + ".json").then(r => r.json()).then(call => {
+            if (!call || call.status === "ended") { 
+                clearInterval(callInterval); 
+                cleanUpCall(); 
+                return; 
+            }
+            
+            // Инициатор звонка видит, что звонок принят, меняет статус и применяет ответ (Answer)
+            if (call.sender === myAccount && call.status === "accepted") {
+                if (document.getElementById("callScreenStatus").innerText !== "Разговор...") {
                     document.getElementById("callScreenStatus").innerText = "Разговор...";
+                }
+                if (call.answer && peerConnection && !peerConnection.remoteDescription) {
                     handleAnswerReceived(call.answer);
                 }
-                if (call.iceCandidates) {
-                    Object.keys(call.iceCandidates).forEach(k => {
-                        const cand = call.iceCandidates[k];
-                        if (cand.sender !== myAccount && !cand.processed) {
-                            if (peerConnection && peerConnection.remoteDescription) {
-                                peerConnection.addIceCandidate(new RTCIceCandidate(cand.candidate)).catch(e=>{});
-                                fetch(URL_FB + "calls/" + callId + "/iceCandidates/" + k + "/processed.json", { method: "PUT", body: "true" });
-                            }
-                        }
-                    });
+            }
+
+            // Принимающий звонок видит, что статус сменился на "accepted" на сервере, и тоже обновляет экран
+            if (call.receiver === myAccount && call.status === "accepted") {
+                if (document.getElementById("callScreenStatus").innerText !== "Разговор...") {
+                    document.getElementById("callScreenStatus").innerText = "Разговор...";
                 }
-            });
-        }, 2000);
-    }
+            }
+            
+            // ИСПРАВЛЕННЫЙ ОБМЕН ICE-КАНДИДАТАМИ:
+            // Каждая сторона должна забирать кандидаты ТОЛЬКО от чужого аккаунта
+            if (call.iceCandidates) {
+                Object.keys(call.iceCandidates).forEach(k => {
+                    const cand = call.iceCandidates[k];
+                    if (!cand) return;
+                    
+                    // Если кандидат пришел от собеседника и еще не обработан локально
+                    if (cand.sender !== myAccount && !cand.processed) {
+                        if (peerConnection && peerConnection.remoteDescription) {
+                            peerConnection.addIceCandidate(new RTCIceCandidate(cand.candidate))
+                            .then(() => {
+                                // Помечаем в общей базе данных, что текущий пользователь этот кандидат обработал
+                                fetch(URL_FB + "calls/" + callId + "/iceCandidates/" + k + "/processed.json", { 
+                                    method: "PUT", 
+                                    body: "true" 
+                                });
+                            })
+                            .catch(e => console.log("Ошибка добавления кандидата:", e));
+                        }
+                    }
+                });
+            }
+        }).catch(e => console.error("Ошибка обновления статуса вызова:", e));
+    }, 1500); // Немного ускорили опрос до 1.5 сек для более быстрой связки звонка
+}
+
 
     function initiateVoiceCall() {
         if (!chatWith) return; const callId = "call_" + Date.now();
