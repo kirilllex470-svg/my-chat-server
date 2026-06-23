@@ -568,7 +568,7 @@
     function stopVideoRecord() { if (mediaRecorder && isRecordingVideo) { mediaRecorder.stop(); isRecordingVideo = false; document.getElementById("videoPreviewBox").style.display = "none"; const btn = document.getElementById("videoBtn"); btn.style.background = "#2481cc"; btn.innerText = "📷"; } }
     function startCallMonitoring() { if (callCheckTimer) clearInterval(callCheckTimer); callCheckTimer = setInterval(() => { if (isCallActive || !myAccount) return; fetch(URL_FB + "calls.json").then(r => r.json()).then(allCalls => { if (!allCalls) return; Object.keys(allCalls).forEach(cId => { const call = allCalls[cId]; if (!call) return; if (call.receiver === myAccount && call.status === "ringing") { showCallUi(cId, call.sender, "incoming"); } }); }).catch(e => console.log("Ошибка проверки звонков", e)); }, 2500); }
     function showCallUi(callId, partner, type) { isCallActive = true; currentCallId = callId; document.getElementById("callOverlay").style.display = "flex"; document.getElementById("callScreenTitle").innerText = `@${partner}`; if (type === "outgoing") { document.getElementById("callScreenStatus").innerText = "Вызов..."; document.getElementById("acceptCallBtn").style.display = "none"; } else { document.getElementById("callScreenStatus").innerText = "Входящий вызов..."; document.getElementById("acceptCallBtn").style.display = "block"; } trackCallStatus(callId); }
-function trackCallStatus(callId) {
+    function trackCallStatus(callId) {
     const callInterval = setInterval(() => {
         if (!isCallActive || currentCallId !== callId) { clearInterval(callInterval); return; }
         fetch(URL_FB + "calls/" + callId + ".json").then(r => r.json()).then(call => {
@@ -677,7 +677,7 @@ function endCurrentCall() {
     });
 }
 
-function cleanUpCall() { isCallActive = false; currentCallId = null; document.getElementById("callOverlay").style.style.display = "none"; document.getElementById("acceptCallBtn").style.display = "none"; if (peerConnection) { peerConnection.close(); peerConnection = null; } if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; } const remoteAudio = document.getElementById("remoteAudioPlayer"); if (remoteAudio) remoteAudio.srcObject = null; }
+function cleanUpCall() { isCallActive = false; currentCallId = null; document.getElementById("callOverlay").style.display = "none"; document.getElementById("acceptCallBtn").style.display = "none"; if (peerConnection) { peerConnection.close(); peerConnection = null; } if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; } const remoteAudio = document.getElementById("remoteAudioPlayer"); if (remoteAudio) remoteAudio.srcObject = null; }
 </script>
 </body>
 </html>
