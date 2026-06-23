@@ -233,26 +233,28 @@
     // Новые переменные для поддержки WebRTC звонков
     let peerConnection = null, localStream = null, currentCallId = null, callCheckTimer = null, isCallActive = false;
 
-// Конфигурация с бесплатными публичными STUN и TURN серверами (логин/пароль openwebrtc)
+// Надежная конфигурация: 2 сервера STUN от Google и 1 стабильный публичный TURN-сервер
 let rtcConfig = { 
     iceServers: [
-        { urls: "stun:://google.com" },
-        { urls: "stun:://google.com" },
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
         {
-            urls: "turn:numb.viagenie.ca:3478",
-            username: "webrtc@live.com",
-            credential: "openwebrtc"
+            urls: "turn:openrelay.metered.ca:443",
+            username: "openrelayproject",
+            credential: "openrelayproject"
         }
     ] 
 };
 
-// Защитная проверка инициализации парсера браузера
+// Защитный блок инициализации
 try {
     new RTCPeerConnection(rtcConfig);
+    console.log("✅ Конфигурация WebRTC успешно инициализирована");
 } catch (e) {
-    console.warn("⚠️ Аварийный режим конфигурации ICE:", e);
-    rtcConfig = { iceServers: [{ urls: "stun:://google.com" }] };
+    console.warn("⚠️ Ошибка конфигурации ICE, включен аварийный режим:", e);
+    rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 }
+
 
 
 
