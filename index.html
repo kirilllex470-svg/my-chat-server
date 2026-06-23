@@ -537,7 +537,7 @@
             });
         });
     }
-    function startPersonalChat(log) {
+        function startPersonalChat(log) {
         chatWith = log; document.getElementById("chatTargetLabel").innerText = "@" + chatWith;
         document.getElementById("boxMain").classList.remove("active");
         setTimeout(() => { document.getElementById("boxChatRoom").classList.add("active"); }, 50);
@@ -574,7 +574,7 @@
                 if (timeStr) { html += `<div style="font-size:10px; opacity:0.4; text-align:right; margin-top:4px;">${timeStr}</div>`; }
                 r.innerHTML = html;
                 let pressTimer;
-                r.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => { e.preventDefault(); openMessageMenu(e.touches[0].clientX, e.touches[0].clientY, msgId, msg); }, 600); }, { passive: false });
+                r.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => { e.preventDefault(); if(e.touches && e.touches[0]) openMessageMenu(e.touches[0].clientX, e.touches[0].clientY, msgId, msg); }, 600); }, { passive: false });
                 r.addEventListener('touchend', () => clearTimeout(pressTimer)); r.addEventListener('touchmove', () => clearTimeout(pressTimer));
                 r.addEventListener('contextmenu', (e) => { e.preventDefault(); openMessageMenu(e.clientX, e.clientY, msgId, msg); });
                 area.appendChild(r);
@@ -582,6 +582,7 @@
             area.scrollTop = area.scrollHeight;
         });
     }
+
     function openMessageMenu(x, y, msgId, msgData) { selectedMsgId = msgId; selectedMsgData = msgData; const menu = document.getElementById("msgContextMenu"); const delBtn = document.getElementById("ctxDelBtn"); if (msgData.sender === myAccount) { delBtn.style.display = "flex"; } else { delBtn.style.display = "none"; } menu.style.left = Math.min(x, window.innerWidth - 160) + "px"; menu.style.top = Math.min(y, window.innerHeight - 100) + "px"; menu.style.display = "flex"; }
     function triggerDeleteMessage() { if (!selectedMsgId || !chatWith) return; if (!confirm("Удалить это сообщение для всех?")) return; const room = [myAccount, chatWith].sort().join("_"); fetch(URL_FB + "messages/" + room + "/" + selectedMsgId + ".json", { method: "DELETE" }).then(() => { document.getElementById("msgContextMenu").style.display = "none"; loadMessages(); }); }
     function triggerForwardMode() { document.getElementById("msgContextMenu").style.display = "none"; const overlay = document.getElementById("forwardOverlay"); overlay.style.display = "flex"; fetch(URL_FB + "contacts/" + myAccount + ".json").then(r => r.json()).then(contactsData => { const container = document.getElementById("forwardContactsList"); container.innerHTML = ""; if (!contactsData) { container.innerHTML = "У вас нет диалогов для пересылки."; return; } Object.keys(contactsData).forEach(log => { if (!contactsData[log]) return; const div = document.createElement("div"); div.className = "msg-context-item"; div.style.background = "rgba(255,255,255,0.05)"; div.style.marginBottom = "4px"; div.innerHTML = `<span>👤 <b>@${log}</b></span>`; div.onclick = () => executeForwardMessage(log); container.appendChild(div); }); }); }
@@ -625,10 +626,8 @@ function initiateVoiceCall() {
     if (!chatWith) return; const callId = "call_" + Date.now();
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         localStream = stream; showCallUi(callId, chatWith, "outgoing");
-        
         peerConnection = new RTCPeerConnection(rtcConfig);
         localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-        
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
                 const cId = "cand_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
@@ -657,10 +656,8 @@ function acceptIncomingCall() {
     fetch(URL_FB + "calls/" + currentCallId + ".json").then(r => r.json()).then(call => {
         if (!call) { endCurrentCall(); return; }
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            localStream = stream;
-            peerConnection = new RTCPeerConnection(rtcConfig);
+            localStream = stream; peerConnection = new RTCPeerConnection(rtcConfig);
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-            
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
                     const cId = "cand_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
