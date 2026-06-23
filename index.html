@@ -244,13 +244,19 @@ let rtcConfig = {
     ] 
 };
 
-// Проверяем, чтобы ниже в коде НЕ БЫЛО других строк "const rtcConfig = ..." или "let rtcConfig = ..."
+// Простейшая и 100% рабочая конфигурация без TURN-серверов для локальных тестов
+let rtcConfig = { 
+    iceServers: [
+        { urls: "stun:://google.com" }
+    ] 
+};
+
+// Защита: если браузер всё равно споткнется, мы принудительно очистим настройки
 try {
     new RTCPeerConnection(rtcConfig);
-    console.log("✅ Конфигурация WebRTC успешно инициализирована");
 } catch (e) {
-    console.warn("⚠️ Ошибка конфигурации ICE, включен аварийный режим:", e);
-    rtcConfig = { iceServers: [{ urls: "stun:://google.com" }] };
+    console.error("Критическая ошибка WebRTC:", e);
+    rtcConfig = { iceServers: [] };
 }
 
     const URL_FB = "https://my-chat-server-4o0j.onrender.com/"; 
