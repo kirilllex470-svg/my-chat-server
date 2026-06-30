@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>МСБ55115</title>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <script src="https://onesignal.com" defer></script>
+   
     <style>
         /* Глобальные стили нового крутого кибер-дизайна */
         :root {
@@ -563,68 +562,85 @@
         }).then(res => { if(res) { status.style.color = "#39ff14"; status.innerText = "Успешно! Теперь нажмите 'Войти'"; } }).catch(() => { status.innerText = "Ошибка сети при регистрации!"; });
     }
     
-    function appLogin() {
-        const log = document.getElementById("loginInp").value.trim().toLowerCase();
-        const pas = document.getElementById("passInp").value;
-        const status = document.getElementById("authStatus");
-        if (!log || !pas) { status.innerText = "Введите логин и пароль!"; return; }
-        status.style.color = "#ff5555"; status.innerText = "Проверка...";
-        fetch("OneSignalSDKWorker.js").then(res => { if (res.status === 404) { status.innerText = "⚠️ Ошибка: Нет OneSignalSDKWorker.js!"; } }).catch(() => {});
-        fetch(URL_FB + "users/" + log + ".json").then(r => r.json()).then(user => {
-            if (user && String(user.password) === String(pas)) {
-                myAccount = log; myID = user.id;
-                document.getElementById("boxAuth").classList.remove("active");
-                setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50);
-                document.getElementById("lblUser").innerText = "Вы: " + myAccount + " (ID: " + myID + ")";
-                window.OneSignalDeferred.push(function(OneSignal) { OneSignal.login(myAccount); if (OneSignal.Notifications) { OneSignal.Notifications.requestPermission(); } });
-                if (myAccount === "admin") { document.getElementById("adminPanel").style.display = "block"; loadAdminUsersList(); }
-                if (heartbeatTimer) clearInterval(heartbeatTimer);
-                heartbeatTimer = setInterval(() => { fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(Date.now()) }); }, 10000);
-                actionLoadMyContacts(); startGlobalMessageMonitoring(); startCallMonitoring();
-            } else { status.innerText = "Неверный логин или пароль!"; }
-        }).catch(() => { status.innerText = "Ошибка сервера (нет связи)!"; });
-    }
-    
-    function appLogout() {
-        if (!confirm("Вы действительно хотите выйти из аккаунта?")) return;
-        if (chatTimer) clearInterval(chatTimer);
-        if (globalMonitorTimer) clearInterval(globalMonitorTimer);
-        if (heartbeatTimer) clearInterval(heartbeatTimer);
-        if (callCheckTimer) clearInterval(callCheckTimer);
-        fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(0) })
-        .then(() => {
-            if (chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); }
-            myAccount = ""; myID = ""; chatWith = ""; totalMessagesCount = {}; isFirstLoadForRoom = {};
-            document.getElementById("boxMain").classList.remove("active");
-            document.getElementById("boxChatRoom").classList.remove("active");
-            const status = document.getElementById("authStatus");
-            status.style.color = "var(--accent-green)"; status.innerText = "Вы успешно вышли из системы.";
-            setTimeout(() => { document.getElementById("boxAuth").classList.add("active"); }, 50);
-        });
-    }
+function appLogin() {
+    const log = document.getElementById("loginInp").value.trim().toLowerCase();
+    const pas = document.getElementById("passInp").value;
+    const status = document.getElementById("authStatus");
+    if (!log || !pas) { status.innerText = "Введите логин и пароль!"; return; }
+    status.style.color = "#ff5555"; status.innerText = "Проверка...";
+    fetch(URL_FB + "users/" + log + ".json").then(r => r.json()).then(user => {
+        if (user && String(user.password) === String(pas)) {
+            myAccount = log; myID = user.id;
+            document.getElementById("boxAuth").classList.remove("active");
+            setTimeout(() => { document.getElementById("boxMain").classList.add("active"); }, 50);
+            document.getElementById("lblUser").innerText = "Вы: " + myAccount + " (ID: " + myID + ")";
+            
+            // Встроенный запрос разрешения на шторку уведомлений
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
+            
+            if (myAccount === "admin") { document.getElementById("adminPanel").style.display = "block"; loadAdminUsersList(); }
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+            heartbeatTimer = setInterval(() => { fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(Date.now()) }); }, 10000);
+            actionLoadMyContacts(); startGlobalMessageMonitoring(); startCallMonitoring();
+        } else { status.innerText = "Неверный логин или пароль!"; }
+    }).catch(() => { status.innerText = "Ошибка сервера (нет связи)!"; });
+}
 
-    function startGlobalMessageMonitoring() {
-        if (globalMonitorTimer) clearInterval(globalMonitorTimer);
+function appLogout() {
+    if (!confirm("Вы действительно хотите выйти из аккаунта?")) return;
+    if (chatTimer) clearInterval(chatTimer);
+    if (globalMonitorTimer) clearInterval(globalMonitorTimer);
+    if (heartbeatTimer) clearInterval(heartbeatTimer);
+    if (callCheckTimer) clearInterval(callCheckTimer);
+    fetch(URL_FB + "users/" + myAccount + "/lastSeen.json", { method: "PUT", body: JSON.stringify(0) })
+    .then(() => {
+        if (chatWith) { fetch(URL_FB + "typing/" + chatWith + "/" + myAccount + ".json", { method: "PUT", body: "false" }); }
+        myAccount = ""; myID = ""; chatWith = ""; totalMessagesCount = {}; isFirstLoadForRoom = {};
+        document.getElementById("boxMain").classList.remove("active");
+        document.getElementById("boxChatRoom").classList.remove("active");
+        const status = document.getElementById("authStatus");
+        status.style.color = "var(--accent-green)"; status.innerText = "Вы успешно вышли из системы.";
+        setTimeout(() => { document.getElementById("boxAuth").classList.add("active"); }, 50);
+    });
+}
+
+function startGlobalMessageMonitoring() {
+    if (globalMonitorTimer) clearInterval(globalMonitorTimer);
+    fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => {
+        if (allRooms) { Object.keys(allRooms).forEach(room => { if (!room.includes(myAccount)) return; Object.keys(allRooms[room]).forEach(msgId => { globalKnownMessages[msgId] = true; }); }); }
+    });
+    globalMonitorTimer = setInterval(() => {
         fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => {
-            if (allRooms) { Object.keys(allRooms).forEach(room => { if (!room.includes(myAccount)) return; Object.keys(allRooms[room]).forEach(msgId => { globalKnownMessages[msgId] = true; }); }); }
-        });
-        globalMonitorTimer = setInterval(() => {
-            fetch(URL_FB + "messages.json").then(r => r.json()).then(allRooms => {
-                if (!allRooms) return;
-                Object.keys(allRooms).forEach(room => {
-                    if (!room.includes(myAccount)) return;
-                    Object.keys(allRooms[room]).forEach(msgId => {
-                        const m = allRooms[room][msgId]; if (!m) return;
-                        if (!globalKnownMessages[msgId] && m.sender !== myAccount) {
-                            const senderPartner = room.replace(myAccount, "").replace("_", "");
-                            if (chatWith !== senderPartner) { triggerTopBanner(m.sender, m.text); }
+            if (!allRooms) return;
+            Object.keys(allRooms).forEach(room => {
+                if (!room.includes(myAccount)) return;
+                Object.keys(allRooms[room]).forEach(msgId => {
+                    const m = allRooms[room][msgId]; if (!m) return;
+                    if (!globalKnownMessages[msgId] && m.sender !== myAccount) {
+                        const senderPartner = room.replace(myAccount, "").replace("_", "");
+                        
+                        if (chatWith !== senderPartner) { 
+                            // Твой стандартный баннер внутри приложения
+                            triggerTopBanner(m.sender, m.text); 
+                            
+                            // Вызов системного уведомления в шторку телефона/браузера
+                            if ("Notification" in window && Notification.permission === "granted") {
+                                new Notification(`💬 Новое от @${m.sender}`, {
+                                    body: m.text ? m.text : "Получен медиафайл... 📎",
+                                    tag: msgId
+                                });
+                            }
                         }
-                        globalKnownMessages[msgId] = true;
-                    });
+                    }
+                    globalKnownMessages[msgId] = true;
                 });
             });
-        }, 3000);
-    }
+        });
+    }, 3000);
+}
+
     function loadAdminUsersList() {
         fetch(URL_FB + "users.json").then(r => r.json()).then(data => {
             const container = document.getElementById("adminUsersList"); container.innerHTML = ""; if (!data) return;
