@@ -1,3 +1,50 @@
+const webPush = require('web-push');
+
+// Вставь сюда ключи, которые ты только что сгенерировал в терминале:
+const publicVapidKey = 'BCJbTksddvu1s4c_1-qMhPxHfn93Ih4oRgi6Fq5V-b0zw7b6mT0v1gFaq20H1LislUuHgzSc81FADMgX0fc12Is';
+const privateVapidKey = 'Q5jIcP_I35klwbvTw5w0ZRHlnb7Y9PPYfjWINMauRVI';
+
+webPush.setVapidDetails(
+  'mailto:your-email@example.com', // Твой любой email для контактов поддержки Google/Apple
+  publicVapidKey,
+  privateVapidKey
+);
+
+// Сюда мы будем сохранять подписки устройств (в реальном проекте лучше писать это в Firebase СУБД)
+// Структура: { "логин_пользователя": subscription_object }
+let userPushSubscriptions = {};
+
+// 1. Создаем эндпоинт, на который клиент будет присылать свой токен при входе
+app.post('/api/save-subscription', (req, res) => {
+  const { login, subscription } = req.body;
+  if (!login || !subscription) return res.status(400).json({ error: 'Missing data' });
+  
+  userPushSubscriptions[login] = subscription;
+  res.status(201).json({ success: true });
+});
+
+// 2. Универсальная функция отправки пуша, которую ты вызовешь при отправке сообщения
+function sendBackgroundPush(targetLogin, senderName, textMessage) {
+  const subscription = userPushSubscriptions[targetLogin];
+  
+  // Если пользователь никогда не заходил с телефона и нет подписки, просто выходим
+  if (!subscription) return;
+
+  const payload = JSON.stringify({
+    title: `💬 Новое от @${senderName}`,
+    body: textMessage || "Отправил вам медиафайл... 📎"
+  });
+
+  webPush.sendNotification(subscription, payload)
+    .catch(err => {
+      console.error("Ошибка отправки пуша в шторку:", err);
+      // Если подписка протухла (пользователь удалил приложение), чистим её
+      if (err.statusCode === 410 || err.statusCode === 404) {
+        delete userPushSubscriptions[targetLogin];
+      }
+    });
+}
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
